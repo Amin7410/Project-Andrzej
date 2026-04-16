@@ -2,6 +2,15 @@
 
 # eml_sr: Primitivizing Continuous Mathematics in Rust
 
+[![Crates.io](https://img.shields.io/crates/v/eml_sr.svg)](https://crates.io/crates/eml_sr)
+[![PyPI](https://img.shields.io/pypi/v/eml-sr.svg)](https://pypi.org/project/eml-sr/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+| System | Installation Command | Registry |
+| :--- | :--- | :--- |
+| **Rust / Cargo** | `cargo add eml_sr` | [crates.io](https://crates.io/crates/eml_sr) |
+| **Python / Pip** | `pip install eml_sr` | [pypi.org](https://pypi.org/project/eml-sr/) |
+
 ## Introduction
 **eml_sr** is a high-performance Rust library that implements one of the deepest structural discoveries in continuous mathematics: **All elementary functions can be represented using just a single binary operator.**
 

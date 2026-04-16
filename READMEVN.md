@@ -1,5 +1,14 @@
 # eml_sr: Nguyên thủy hóa Toán học Liên tục trong Rust
 
+[![Crates.io](https://img.shields.io/crates/v/eml_sr.svg)](https://crates.io/crates/eml_sr)
+[![PyPI](https://img.shields.io/pypi/v/eml-sr.svg)](https://pypi.org/project/eml-sr/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+| Hệ thống | Lệnh cài đặt nhanh | Kho lưu trữ |
+| :--- | :--- | :--- |
+| **Rust / Cargo** | `cargo add eml_sr` | [crates.io](https://crates.io/crates/eml_sr) |
+| **Python / Pip** | `pip install eml_sr` | [pypi.org](https://pypi.org/project/eml-sr/) |
+
 ## Giới thiệu
 **eml_sr** là một thư viện Rust hiệu năng cao, hiện thực hóa một trong những khám phá cấu trúc sâu sắc nhất của toán học liên tục: **Toàn bộ các hàm số sơ cấp đều có thể được biểu diễn chỉ bằng một toán tử hai ngôi duy nhất.**
 
