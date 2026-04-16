@@ -1,0 +1,15 @@
+# Rust build artifacts
+target/
+
+# Dependency directories
+Cargo.lock
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+flycheck*
+target_temp/

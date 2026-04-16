@@ -1,0 +1,76 @@
+[package]
+name = "eml_sr"
+version = "0.1.0"
+edition = "2021"
+description = "Symbolic regression via the EML operator — find the math formula hidden in your data"
+authors = ["Andrzej Odrzywolek <andrzej.odrzywolek@uj.edu.pl>", "Minh Dinh Khoi <minhdinhkhoi@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/Amin7410/Project-Andrzej.git"
+keywords = ["symbolic-regression", "explainable-ai", "mathematics", "eml", "formula-discovery"]
+readme = "README.md"
+
+# Build both a Rust library (rlib) and a C-compatible dynamic library (cdylib).
+# cdylib is required for the Python wheel (PyO3) and for C/C++ FFI.
+[lib]
+name = "eml_sr"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "eml-sr"
+path = "src/main.rs"
+
+# Optional feature flags.
+# `python`  — compiles the PyO3 Python bindings.
+# `serde`   — enables JSON serialisation of SearchResult.
+[features]
+default = ["full-math"]
+full-math = []
+python = ["dep:pyo3"]
+serde  = ["dep:serde", "num-complex/serde"]
+
+[dependencies]
+# Complex number arithmetic following IEEE 754 with proper branch cuts.
+num-complex = "0.4"
+
+# Data-parallel computation across all CPU cores — zero boilerplate.
+rayon = "1"
+
+# Ergonomic, zero-boilerplate error types.
+thiserror = "2"
+
+# Thread-safe concurrent HashMap for fingerprint deduplication during parallel search.
+dashmap = "6"
+
+# Allows f64 to be used as HashMap keys (via OrderedFloat<f64>).
+ordered-float = "4"
+
+# Timestamps for logs.
+chrono = "0.4"
+
+# Optional: serialise/deserialise SearchResult to JSON.
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+optional = true
+
+# Optional: Python bindings compiled with maturin.
+[dependencies.pyo3]
+version = "0.22"
+features = ["extension-module"]
+optional = true
+
+[dev-dependencies]
+# Floating-point approximate equality in tests.
+approx = "0.5"
+
+# Benchmarking framework.
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "search_speed"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true       # Link-Time Optimisation — crucial for inlining across crates.
+codegen-units = 1
