@@ -51,11 +51,11 @@ In tasks where AI is required to automatically discover formulas from raw data:
 **Andrzej Odrzywołek**, a theoretical physicist at the Institute of Theoretical Physics at the Jagiellonian University (Krakow, Poland), is the author behind the groundbreaking discovery of the minimalism of continuous mathematics. Through personal research effort and a systematic exhaustive search method, he solved a problem that had no precedent: finding a single "atom" for all functions.
 
 The core discovery of Andrzej Odrzywołek is the EML (Exp-Minus-Log) operator:
-                $$eml(x, y) = \exp(x) - \ln(y)$$
+                eml(x, y) = e^(x) - ln(y)
 He has convincingly proven that this operator, when combined with only the constant $1$, can reproduce the entire catalog of a standard scientific calculator. This includes:
-- Basic arithmetic operations ($+, -, \times, /$).
+- Basic arithmetic operations (+, -, x, /).
 - All elementary functions (sin, cos, log, powers...).
-- Fundamental constants of mathematics such as $e$, $\pi$, and the imaginary unit $i$.
+- Fundamental constants of mathematics such as e, pi, and the imaginary unit i.
 
 Andrzej Odrzywołek's vision does not stop at pure theory. He has established a rigorous verification process, using independent transcendental constants to prove that all mathematical expressions can be converted into a uniform binary tree structure of EML nodes. His work opens up massive potential applications in creating minimalist analog computing circuits and enhancing the explainability of artificial intelligence through symbolic regression.
 
@@ -77,7 +77,7 @@ This is the largest and most practical application of EML in software today:
 
 EML provides an ideal foundation for developers to build ultra-minimalist execution systems:
 
-- **EML Compiler**: You can use the `eml_sr` library as a core engine to write compiler software capable of converting any mathematical formula (e.g., $\sin(x) + e^x$) into pure EML form — a series of nested EML instructions containing only the constant $1$.
+- **EML Compiler**: You can use the `eml_sr` library as a core engine to write compiler software capable of converting any mathematical formula (e.g., sin(x) + e^x) into pure EML form — a series of nested EML instructions containing only the constant 1.
 
 - **Single Instruction Stack Machine**: This pure EML form can be executed on a simulated stack machine that has exactly one single instruction. Imagine an RPN (Reverse Polish Notation) calculator with exactly one button — that is the essence of an EML virtual machine. This extreme simplicity makes formal verification more feasible and easier than ever.
 
@@ -87,13 +87,13 @@ EML acts as a bridge between software engineers and hardware engineers:
 
 - Because all elementary functions become uniform binary trees in EML notation, you can use the `eml_sr` library to write software that compiles formulas into **circuit schematics**.
 
-- This is very useful in **analog computing**, where engineers can create multivariate function computing circuits by connecting a binary tree topology structure of identical EML elements. Instead of designing separate circuits for each operation ($+$, $\times$, $\sin$...), you can mass-produce a single type of EML component and connect them according to the tree diagram.
+- This is very useful in **analog computing**, where engineers can create multivariate function computing circuits by connecting a binary tree topology structure of identical EML elements. Instead of designing separate circuits for each operation (+, x, sin...), you can mass-produce a single type of EML component and connect them according to the tree diagram.
 
 ### 4. Data Structure Design and Parsing
 
 EML brings radical simplicity to the processing of mathematical expressions in software:
 
-- Instead of writing handling code for dozens of different operations ($+, -, \sin, \cos...$), your software only needs to handle one **extremely simple context-free grammar**:
+- Instead of writing handling code for dozens of different operations (+, -, sin, cos...), your software only needs to handle one **extremely simple context-free grammar**:
 $$S \rightarrow 1 \mid eml(S, S)$$
 
 - This makes systems for storage, parsing, or formal processing of mathematical expressions incredibly uniform. Every expression — no matter how complex — is represented by the same data structure, the same tree traversal algorithm, and the same evaluation logic. No more exceptions, no more special branching.
