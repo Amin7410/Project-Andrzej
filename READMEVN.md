@@ -49,11 +49,11 @@ Trong bài toán yêu cầu AI tự động tìm ra công thức từ dữ liệ
 **Andrzej Odrzywołek**, nhà vật lý lý thuyết tại Viện Vật lý Lý thuyết thuộc Đại học Jagiellonian (Krakow, Ba Lan), là tác giả đứng sau phát hiện chấn động về tính tối giản của toán học liên tục. Thông qua nỗ lực nghiên cứu cá nhân và phương pháp tìm kiếm cạn kiệt có hệ thống, ông đã giải quyết được một bài toán mà trước đó chưa có tiền lệ: tìm ra một "nguyên tử" duy nhất cho mọi hàm số.
 
 Khám phá cốt lõi của Andrzej Odrzywołek chính là toán tử EML (Exp-Minus-Log):
-                $$eml(x, y) = \exp(x) - \ln(y)$$
-Ông đã chứng minh một cách thuyết phục rằng toán tử này, khi kết hợp với duy nhất hằng số $1$, có thể tái tạo toàn bộ danh mục của một máy tính khoa học tiêu chuẩn. Điều này bao gồm:
-- Các phép tính số học cơ bản ($+, -, \times, /$).
+                eml(x, y) = e^(x) - ln(y)
+Ông đã chứng minh một cách thuyết phục rằng toán tử này, khi kết hợp với duy nhất hằng số 1, có thể tái tạo toàn bộ danh mục của một máy tính khoa học tiêu chuẩn. Điều này bao gồm:
+- Các phép tính số học cơ bản (+, -, x, /).
 - Tất cả các hàm số sơ cấp (sin, cos, log, lũy thừa...).
-- Các hằng số nền tảng của toán học như $e$, $\pi$ và đơn vị ảo $i$.
+- Các hằng số nền tảng của toán học như e, pi và đơn vị ảo i.
 
 Tầm nhìn của Andrzej Odrzywołek không chỉ dừng lại ở lý thuyết thuần túy. Ông đã thiết lập một quy trình xác minh chặt chẽ, sử dụng các hằng số siêu việt độc lập để chứng minh rằng mọi biểu thức toán học đều có thể được chuyển đổi thành một cấu trúc cây nhị phân đồng nhất của các nút EML. Công trình của ông mở ra những ứng dụng tiềm năng to lớn trong việc tạo ra các mạch tính toán analog tối giản và thúc đẩy khả năng giải thích của trí tuệ nhân tạo thông qua hồi quy ký hiệu.
 
@@ -75,7 +75,7 @@ Sức mạnh của toán tử EML không chỉ nằm ở tính thanh lịch về
 
 EML cung cấp một nền tảng lý tưởng để các nhà phát triển xây dựng các hệ thống thực thi siêu tối giản:
 
-- **Trình biên dịch EML**: Bạn có thể dùng thư viện `eml_sr` làm nhân lõi để viết các phần mềm trình biên dịch có khả năng chuyển đổi bất kỳ công thức toán học nào (ví dụ: $\sin(x) + e^x$) thành dạng EML thuần túy — một chuỗi các lệnh EML lồng nhau chỉ chứa hằng số $1$.
+- **Trình biên dịch EML**: Bạn có thể dùng thư viện `eml_sr` làm nhân lõi để viết các phần mềm trình biên dịch có khả năng chuyển đổi bất kỳ công thức toán học nào (ví dụ: sin(x) + e^x) thành dạng EML thuần túy — một chuỗi các lệnh EML lồng nhau chỉ chứa hằng số 1.
 
 - **Máy ảo một tập lệnh (Single Instruction Stack Machine)**: Dạng EML thuần túy này có thể được thực thi trên phần mềm giả lập một cỗ máy ngăn xếp chỉ có đúng một tập lệnh duy nhất. Hãy tưởng tượng một chiếc máy tính RPN (Reverse Polish Notation) chỉ có đúng một nút bấm — đó chính là bản chất của máy ảo EML. Sự đơn giản cực độ này giúp việc xác minh tính đúng đắn (formal verification) trở nên khả thi và dễ dàng hơn bao giờ hết.
 
@@ -85,14 +85,14 @@ EML làm cầu nối giữa kỹ sư phần mềm và kỹ sư phần cứng:
 
 - Bởi vì mọi hàm sơ cấp đều trở thành các cây nhị phân đồng nhất trong ký pháp EML, bạn có thể dùng thư viện `eml_sr` để viết phần mềm biên dịch công thức thành các **bản thiết kế mạch điện** (circuit schematics).
 
-- Điều này rất hữu ích cho lĩnh vực **điện toán tương tự** (analog computing), nơi các kỹ sư có thể tạo ra các mạch tính toán hàm đa biến bằng cách ghép nối một cấu trúc topology cây nhị phân của các phần tử EML giống hệt nhau. Thay vì phải thiết kế riêng từng mạch cho mỗi phép toán ($+$, $\times$, $\sin$...), bạn chỉ cần sản xuất hàng loạt một loại linh kiện EML duy nhất và kết nối chúng theo sơ đồ cây.
+- Điều này rất hữu ích cho lĩnh vực **điện toán tương tự** (analog computing), nơi các kỹ sư có thể tạo ra các mạch tính toán hàm đa biến bằng cách ghép nối một cấu trúc topology cây nhị phân của các phần tử EML giống hệt nhau. Thay vì phải thiết kế riêng từng mạch cho mỗi phép toán (+, x, sin...), bạn chỉ cần sản xuất hàng loạt một loại linh kiện EML duy nhất và kết nối chúng theo sơ đồ cây.
 
 ### 4. Thiết kế Cấu trúc Dữ liệu và Phân tích Cú pháp (Parsing)
 
 EML mang lại sự đơn giản triệt để cho việc xử lý biểu thức toán học trong phần mềm:
 
-- Thay vì phải viết code xử lý cho hàng chục phép toán khác nhau ($+, -, \sin, \cos...$), phần mềm của bạn chỉ cần xử lý một **ngữ pháp phi ngữ cảnh cực kỳ đơn giản**:
-$$S \rightarrow 1 \mid eml(S, S)$$
+- Thay vì phải viết code xử lý cho hàng chục phép toán khác nhau (+, -, sin, cos...), phần mềm của bạn chỉ cần xử lý một **ngữ pháp phi ngữ cảnh cực kỳ đơn giản**:
+$$S \rightarrow 1 \mid eml(S, S) $$$
 
 - Điều này giúp các hệ thống lưu trữ, phân tích cú pháp (parser) hoặc xử lý hình thức các biểu thức toán học trở nên vô cùng đồng nhất. Mọi biểu thức — dù phức tạp đến đâu — đều được biểu diễn bằng cùng một cấu trúc dữ liệu, cùng một thuật toán duyệt cây, và cùng một logic đánh giá. Không còn ngoại lệ, không còn rẽ nhánh đặc biệt.
 
