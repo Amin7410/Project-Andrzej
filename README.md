@@ -44,7 +44,7 @@ In tasks where AI is required to automatically discover formulas from raw data:
     *   **Value Proposition**: EML turns the difficult "combinatorial search" problem into a smooth "Gradient Optimization" problem. By using standard optimizers (like Adam) on the tree branches and rounding weights (snapping), Neural Networks can automatically prune and reveal sharp, precise physical and mathematical laws, fundamentally solving the "black box" problem of AI.
 
 > [!NOTE]
-> **💡 Note on Architecture & Trade-offs**: The absolute uniformity of EML comes with trade-offs regarding expression tree depth and strict requirements for floating-point precision. To understand these issues better, please see my personal analysis and discussion in [WHATITHINK.txt](WHATITHINK.txt).
+> **💡 Note on Architecture & Trade-offs**: The absolute uniformity of EML comes with trade-offs regarding expression tree depth and strict requirements for floating-point precision. To understand these issues better, please see my personal analysis and discussion in [docs/WHATITHINK.txt](docs/WHATITHINK.txt).
 
 ## Scientific Foundation and Authors
 
@@ -98,59 +98,63 @@ S -> 1|eml(S, S)
 
 - This makes systems for storage, parsing, or formal processing of mathematical expressions incredibly uniform. Every expression — no matter how complex — is represented by the same data structure, the same tree traversal algorithm, and the same evaluation logic. No more exceptions, no more special branching.
 
-## Usage Guide
+## Quick Start
 
-The project is designed to serve both theoretical research and practical application purposes.
+### 1. Installation
 
-### 1. Run the Verification Framework (Demo)
-After downloading the source code, you can immediately run the verification suite to see the power of the EML operator:
+**Python Users:**
 ```bash
-cargo run
+pip install eml_sr
 ```
 
-### 2. Browse Sample Examples
-We provide a dedicated folder `examples/` for you to learn by doing. Run them with:
+**Rust Users:**
 ```bash
-# Univariate discovery
-cargo run --example 01_simple_discovery
-
-# Multivariate (2+ variables)
-cargo run --example 02_multivariate
-
-# Identify mathematical constants
-cargo run --example 03_constant_recognition
+cargo add eml_sr
 ```
 
-### 3. Add Your Own Test Scenarios
-You can easily test any function by opening `src/tests/mod.rs` and adding a new `TestCase` to the `get_test_suite()` function. All changes will be automatically updated in the report when you run `cargo run`.
+### 2. Basic Usage (Python)
 
-### 3. Integrate EML-SR into Your Project
-If you are building another application and want to use the "brain" of `eml_sr`, add the following to your `Cargo.toml`:
-```toml
-[dependencies]
-eml_sr = { git = "https://github.com/Amin7410/Project-Andrzej.git" }
+Discover the hidden formula in your data using the Scikit-Learn compatible API:
+
+```python
+from eml_sr import Searcher
+
+# Your data
+X = [[1.0], [2.0], [3.0]]
+y = [2.5, 4.5, 6.5]  # f(x) = 2x + 0.5
+
+# Search for the formula
+searcher = Searcher()
+result = searcher.fit(X, y)
+
+print(f"Formula: {result.formula}")
+# Output: Formula: (v_{0} * 2.0) + 0.5
 ```
 
-And use it in your source code:
+### 3. Basic Usage (Rust)
+
 ```rust
 use eml_sr::{Searcher, SearchConfig};
 
 fn main() {
-    let config = SearchConfig::default();
-    let searcher = Searcher::new(config);
+    let searcher = Searcher::new(SearchConfig::default());
+    let xs = vec![1.0, 2.0, 3.0];
+    let ys = vec![2.5, 4.5, 6.5];
     
-    // Search for a formula from your x, y data
-    // let result = searcher.find_function(&xs, &ys);
+    if let Ok(result) = searcher.find_function(&xs, &ys) {
+        println!("Found formula: {}", result.formula);
+    }
 }
 ```
 
-### 4. Advanced Modes (Feature Flags)
-The library provides flexible compilation options:
-- **Default**: Uses the full library of operators for best search performance.
-- **Pure EML**: Uses only the single EML operator for theoretical research purposes.
-  ```bash
-  cargo run --no-default-features
-  ```
+## Project Status & Safety
+
+For detailed information about current capabilities, supported platforms, and **critical safety warnings** regarding memory usage (OOM), please see [docs/STATUS.md](docs/STATUS.md).
+
+## Development & Contributing
+
+If you want to build from source, run benchmarks, or contribute to the core engine, please see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ---
-*Note: The `eml_sr` library is optimized for high performance; running in `--release` mode is recommended for the best speed.*
+*Note: The `eml_sr` library is a production-ready implementation of the EML operator theory.*
+

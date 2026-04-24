@@ -42,7 +42,7 @@ Trong bài toán yêu cầu AI tự động tìm ra công thức từ dữ liệ
     *   **Giá trị mang lại**: EML biến bài toán "tìm kiếm tổ hợp" khó nhằn thành bài toán "tối ưu hóa Gradient" trơn tru. Bằng cách sử dụng các bộ tối ưu hóa chuẩn (như Adam) trên các nhánh cây và làm tròn trọng số (snapping), mạng Nơ-ron có thể tự động gọt giũa và làm lộ diện các định luật vật lý, toán học một cách rành mạch, giải quyết triệt để vấn đề "hộp đen" của AI.
 
 > [!NOTE]
-> **💡 Lưu ý về Kiến trúc & Đánh đổi (Trade-offs)**: Sự đồng nhất tuyệt đối của EML đi kèm với những đánh đổi về chiều sâu của cây biểu thức và yêu cầu khắt khe trong việc xử lý số phẩy động (Floating-point). Để hiểu rõ hơn về vấn đề này, hãy ghé xem bài phân tích và thảo luận của cá nhân tôi tại [WHATITHIN.txt](WHATITHINK.txt).
+> **💡 Lưu ý về Kiến trúc & Đánh đổi (Trade-offs)**: Sự đồng nhất tuyệt đối của EML đi kèm với những đánh đổi về chiều sâu của cây biểu thức và yêu cầu khắt khe trong việc xử lý số phẩy động (Floating-point). Để hiểu rõ hơn về vấn đề này, hãy ghé xem bài phân tích và thảo luận của cá nhân tôi tại [docs/WHATITHINK.txt](docs/WHATITHINK.txt).
 
 ## Cơ sở khoa học và Tác giả
 
@@ -95,60 +95,62 @@ EML mang lại sự đơn giản triệt để cho việc xử lý biểu thức
 
 - Điều này giúp các hệ thống lưu trữ, phân tích cú pháp (parser) hoặc xử lý hình thức các biểu thức toán học trở nên vô cùng đồng nhất. Mọi biểu thức — dù phức tạp đến đâu — đều được biểu diễn bằng cùng một cấu trúc dữ liệu, cùng một thuật toán duyệt cây, và cùng một logic đánh giá. Không còn ngoại lệ, không còn rẽ nhánh đặc biệt.
 
-## Hướng dẫn sử dụng
+## Bắt đầu nhanh
 
-Dự án được thiết kế để phục vụ cả mục đích nghiên cứu lý thuyết lẫn ứng dụng thực tế.
+### 1. Cài đặt
 
-### 1. Chạy bộ khung kiểm nghiệm (Demo)
-Sau khi tải mã nguồn về, bạn có thể chạy ngay bộ khung kiểm nghiệm để thấy sức mạnh của toán tử EML trong việc tìm kiếm công thức:
+**Dành cho người dùng Python:**
 ```bash
-cargo run
+pip install eml_sr
 ```
 
-### 2. Xem các ví dụ mẫu sinh động
-Chúng tôi cung cấp thư mục `examples/` để bạn học cách sử dụng qua thực tế. Hãy thử chạy các lệnh sau:
+**Dành cho người dùng Rust:**
 ```bash
-# Tìm hàm đơn biến
-cargo run --example 01_simple_discovery
-
-# Tìm hàm đa biến
-cargo run --example 02_multivariate
-
-# Nhận diện hằng số toán học
-cargo run --example 03_constant_recognition
+cargo add eml_sr
 ```
 
-### 3. Tự thêm kịch bản kiểm tra của riêng bạn
-Bạn có thể dễ dàng kiểm tra bất kỳ hàm số nào bằng cách mở file `src/tests/mod.rs` và thêm một `TestCase` mới vào hàm `get_test_suite()`. 
-Mọi thay đổi sẽ tự động được cập nhật vào báo cáo khi bạn chạy `cargo run`.
+### 2. Cách dùng cơ bản (Python)
 
-### 3. Tích hợp EML-SR vào dự án của bạn
-Nếu bạn đang xây dựng một ứng dụng khác và muốn sử dụng "bộ não" của `eml_sr`, hãy thêm vào `Cargo.toml`:
-```toml
-[dependencies]
-eml_sr = { git = "https://github.com/Amin7410/Project-Andrzej.git" }
+Khám phá công thức ẩn trong dữ liệu của bạn bằng API tương thích với Scikit-Learn:
+
+```python
+from eml_sr import Searcher
+
+# Dữ liệu của bạn
+X = [[1.0], [2.0], [3.0]]
+y = [2.5, 4.5, 6.5]  # f(x) = 2x + 0.5
+
+# Tìm kiếm công thức
+searcher = Searcher()
+result = searcher.fit(X, y)
+
+print(f"Công thức tìm được: {result.formula}")
+# Kết quả: Công thức tìm được: (v_{0} * 2.0) + 0.5
 ```
 
-Và sử dụng trong mã nguồn:
+### 3. Cách dùng cơ bản (Rust)
+
 ```rust
 use eml_sr::{Searcher, SearchConfig};
 
 fn main() {
-    let config = SearchConfig::default();
-    let searcher = Searcher::new(config);
+    let searcher = Searcher::new(SearchConfig::default());
+    let xs = vec![1.0, 2.0, 3.0];
+    let ys = vec![2.5, 4.5, 6.5];
     
-    // Tìm kiếm công thức từ dữ liệu x, y của bạn
-    // let result = searcher.find_function(&xs, &ys);
+    if let Ok(result) = searcher.find_function(&xs, &ys) {
+        println!("Tìm thấy công thức: {}", result.formula);
+    }
 }
 ```
 
-### 4. Các chế độ nâng cao (Feature Flags)
-Thư viện cung cấp các tùy chọn biên dịch linh hoạt:
-- **Mặc định**: Sử dụng toàn bộ kho toán tử để đạt hiệu suất tìm kiếm tốt nhất.
-- **Pure EML**: Chỉ sử dụng duy nhất toán tử EML cho mục đích nghiên cứu lý thuyết.
-  ```bash
-  cargo run --no-default-features
-  ```
+## Tình trạng Dự án & An toàn
+
+Để biết thông tin chi tiết về khả năng hiện tại, các nền tảng hỗ trợ và **cảnh báo an toàn quan trọng** về việc sử dụng bộ nhớ (OOM), vui lòng xem [docs/STATUS_VN.md](docs/STATUS_VN.md).
+
+## Phát triển & Đóng góp
+
+Nếu bạn muốn biên dịch từ mã nguồn, chạy thử nghiệm hiệu năng, hoặc đóng góp vào nhân lõi của bộ máy, vui lòng xem tài liệu [docs/CONTRIBUTING_VN.md](docs/CONTRIBUTING_VN.md).
 
 ---
-*Lưu ý: Thư viện `eml_sr` được tối ưu hóa cho hiệu suất cao, khuyến khích chạy ở chế độ `--release` để đạt tốc độ tốt nhất.*
+*Lưu ý: Thư viện `eml_sr` là một bản hiện thực hóa sẵn sàng cho sản xuất của lý thuyết toán tử EML.*

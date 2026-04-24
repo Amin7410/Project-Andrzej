@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "eml-sr"
-version = "0.1.0"
+version = "0.1.1"
 description = "Symbolic regression via the EML operator — find the math formula hidden in your data"
 authors = [
     { name = "Andrzej Odrzywolek", email = "andrzej.odrzywolek@uj.edu.pl" },
