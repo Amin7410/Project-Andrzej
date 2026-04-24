@@ -2,7 +2,7 @@
 //! This script demonstrates how to find a function with multiple inputs, e.g., f(x0, x1) = x0 + x1.
 //! Run this with: cargo run --example 02_multivariate
 
-use eml_sr::{Searcher, SearchConfig};
+use eml_sr::Searcher;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Example 02: Multivariate Discovery ---");

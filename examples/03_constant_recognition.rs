@@ -2,7 +2,7 @@
 //! This script demonstrates how to identify a numerical constant as a mathematical expression.
 //! Run this with: cargo run --example 03_constant_recognition
 
-use eml_sr::{Searcher, SearchConfig};
+use eml_sr::Searcher;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Example 03: Constant Recognition ---");
