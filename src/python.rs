@@ -204,9 +204,9 @@ fn eml_sr(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySearchResult>()?;
     
     // Register custom exceptions
-    m.add("EmlDimensionError", py.get_type::<EmlDimensionError>())?;
-    m.add("EmlComplexityError", py.get_type::<EmlComplexityError>())?;
-    m.add("EmlRuntimeError", py.get_type::<EmlRuntimeError>())?;
+    m.add("EmlDimensionError", py.get_type_bound::<EmlDimensionError>())?;
+    m.add("EmlComplexityError", py.get_type_bound::<EmlComplexityError>())?;
+    m.add("EmlRuntimeError", py.get_type_bound::<EmlRuntimeError>())?;
     
     Ok(())
 }
