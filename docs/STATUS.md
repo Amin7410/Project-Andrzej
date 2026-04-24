@@ -14,11 +14,11 @@ This document provides a clear overview of what `eml_sr` can do today, its core 
 
 Knowing the defaults helps you decide how to tune the engine for your hardware:
 
-max_complexity : 6 - Maximum depth of the expression tree. 
-beam_width : 1000 - Candidates kept per level (Critical for RAM). 
-precision_goal : 1e-10 - Error threshold to stop the search early.. 
-complexity_penalty : 0.1 - Penalty to favor simpler formulas over complex ones. 
-optimize_constants : true - Enables high-precision constant refinement.
+- **max_complexity : 6 - Maximum depth of the expression tree. 
+- **beam_width : 1000 - Candidates kept per level (Critical for RAM). 
+- **precision_goal : 1e-10 - Error threshold to stop the search early.. 
+- **complexity_penalty : 0.1 - Penalty to favor simpler formulas over complex ones. 
+- **optimize_constants : true - Enables high-precision constant refinement.
 
 ## Key Benefits
 
