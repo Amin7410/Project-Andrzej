@@ -14,11 +14,11 @@ Tài liệu này cung cấp cái nhìn rõ ràng về những gì `eml_sr` có t
 
 Hiểu rõ các giá trị mặc định sẽ giúp bạn quyết định cách tinh chỉnh động cơ cho phù hợp với phần cứng của mình:
 
-max_complexity : 6 - Độ sâu tối đa của cây biểu thức. 
-beam_width : 1000 - Số ứng viên giữ lại mỗi cấp độ (Quan trọng cho RAM). 
-precision_goal : 1e-10 - Ngưỡng sai số để dừng tìm kiếm sớm. 
-complexity_penalty : 0.1 - Hình phạt để ưu tiên các công thức đơn giản. 
-optimize_constants : true - Bật tính năng tinh chỉnh hằng số độ chính xác cao. 
+- max_complexity : 6 - Độ sâu tối đa của cây biểu thức. 
+- beam_width : 1000 - Số ứng viên giữ lại mỗi cấp độ (Quan trọng cho RAM). 
+- precision_goal : 1e-10 - Ngưỡng sai số để dừng tìm kiếm sớm. 
+- complexity_penalty : 0.1 - Hình phạt để ưu tiên các công thức đơn giản. 
+- optimize_constants : true - Bật tính năng tinh chỉnh hằng số độ chính xác cao. 
 
 ## Lợi ích Cốt lõi
 
