@@ -56,7 +56,7 @@ optional = true
 # Optional: Python bindings compiled with maturin.
 [dependencies.pyo3]
 version = "0.22"
-features = ["extension-module"]
+features = ["extension-module", "generate-import-lib"]
 optional = true
 
 [dependencies.numpy]
