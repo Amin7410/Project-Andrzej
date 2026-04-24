@@ -25,7 +25,7 @@ path = "src/main.rs"
 [features]
 default = ["full-math"]
 full-math = []
-python = ["dep:pyo3"]
+python = ["dep:pyo3", "dep:numpy"]
 serde  = ["dep:serde", "num-complex/serde"]
 
 [dependencies]
@@ -57,6 +57,10 @@ optional = true
 [dependencies.pyo3]
 version = "0.22"
 features = ["extension-module"]
+optional = true
+
+[dependencies.numpy]
+version = "0.22"
 optional = true
 
 [dev-dependencies]

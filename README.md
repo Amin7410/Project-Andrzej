@@ -52,7 +52,7 @@ In tasks where AI is required to automatically discover formulas from raw data:
 
 The core discovery of Andrzej Odrzywołek is the EML (Exp-Minus-Log) operator:
                 eml(x, y) = e^(x) - ln(y)
-He has convincingly proven that this operator, when combined with only the constant $1$, can reproduce the entire catalog of a standard scientific calculator. This includes:
+He has convincingly proven that this operator, when combined with only the constant 1, can reproduce the entire catalog of a standard scientific calculator. This includes:
 - Basic arithmetic operations (+, -, x, /).
 - All elementary functions (sin, cos, log, powers...).
 - Fundamental constants of mathematics such as e, pi, and the imaginary unit i.
@@ -94,7 +94,7 @@ EML acts as a bridge between software engineers and hardware engineers:
 EML brings radical simplicity to the processing of mathematical expressions in software:
 
 - Instead of writing handling code for dozens of different operations (+, -, sin, cos...), your software only needs to handle one **extremely simple context-free grammar**:
-$$S \rightarrow 1 \mid eml(S, S)$$
+S -> 1|eml(S, S)
 
 - This makes systems for storage, parsing, or formal processing of mathematical expressions incredibly uniform. Every expression — no matter how complex — is represented by the same data structure, the same tree traversal algorithm, and the same evaluation logic. No more exceptions, no more special branching.
 

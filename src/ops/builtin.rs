@@ -40,7 +40,7 @@ impl Operator for Eml {
     fn arity(&self) -> u8 { 2 }
     fn eval(&self, args: &[Value]) -> Option<Value> { value::c_eml(args[0], args[1]) }
     fn to_latex(&self, args: &[&str]) -> String { format!(r"e^{{{0}}} - \ln({1})", args[0], args[1]) }
-    fn to_python(&self, args: &[&str]) -> String { format!("(cmath.exp({0}) - cmath.log({1}))", args[0], args[1]) }
+    fn to_python(&self, args: &[&str]) -> String { format!("(np.exp({0}) - np.log({1}))", args[0], args[1]) }
 }
 
 #[derive(Debug)]
@@ -79,23 +79,24 @@ impl Operator for Divide {
 
 // EXTENDED MATHEMATICS (Toggleable via "full-math" feature)
 #[cfg(feature = "full-math")]
-unary_op!(Exp,    "Exp",    value::c_exp,   r"e^{{{0}}}",       "cmath.exp({0})",    "Exp[{0}]");
+unary_op!(Exp,    "Exp",    value::c_exp,   r"e^{{{0}}}",       "np.exp({0})",    "Exp[{0}]");
 #[cfg(feature = "full-math")]
-unary_op!(Log,    "Log",    value::c_ln,    r"\ln({0})",         "cmath.log({0})",    "Log[{0}]");
+unary_op!(Log,    "Log",    value::c_ln,    r"\ln({0})",         "np.log({0})",    "Log[{0}]");
 #[cfg(feature = "full-math")]
-unary_op!(Sqrt,   "Sqrt",   value::c_sqrt,  r"\sqrt{{{0}}}",    "cmath.sqrt({0})",   "Sqrt[{0}]");
+unary_op!(Sqrt,   "Sqrt",   value::c_sqrt,  r"\sqrt{{{0}}}",    "np.sqrt({0})",   "Sqrt[{0}]");
 #[cfg(feature = "full-math")]
-unary_op!(Sin,    "Sin",    value::c_sin,   r"\sin({0})",        "cmath.sin({0})",    "Sin[{0}]");
+unary_op!(Sin,    "Sin",    value::c_sin,   r"\sin({0})",        "np.sin({0})",    "Sin[{0}]");
 #[cfg(feature = "full-math")]
-unary_op!(Cos,    "Cos",    value::c_cos,   r"\cos({0})",        "cmath.cos({0})",    "Cos[{0}]");
+unary_op!(Cos,    "Cos",    value::c_cos,   r"\cos({0})",        "np.cos({0})",    "Cos[{0}]");
 #[cfg(feature = "full-math")]
-unary_op!(Tan,    "Tan",    value::c_tan,   r"\tan({0})",        "cmath.tan({0})",    "Tan[{0}]");
+unary_op!(Tan,    "Tan",    value::c_tan,   r"\tan({0})",        "np.tan({0})",    "Tan[{0}]");
 #[cfg(feature = "full-math")]
-unary_op!(ArcSin, "ArcSin", value::c_asin,  r"\arcsin({0})",     "cmath.asin({0})",   "ArcSin[{0}]");
+unary_op!(ArcSin, "ArcSin", value::c_asin,  r"\arcsin({0})",     "np.arcsin({0})",   "ArcSin[{0}]");
 #[cfg(feature = "full-math")]
-unary_op!(ArcCos, "ArcCos", value::c_acos,  r"\arccos({0})",     "cmath.acos({0})",   "ArcCos[{0}]");
+unary_op!(ArcCos, "ArcCos", value::c_acos,  r"\arccos({0})",     "np.arccos({0})",   "ArcCos[{0}]");
 #[cfg(feature = "full-math")]
-unary_op!(ArcTan, "ArcTan", value::c_atan,  r"\arctan({0})",     "cmath.atan({0})",   "ArcTan[{0}]");
+unary_op!(ArcTan, "ArcTan", value::c_atan,  r"\arctan({0})",     "np.arctan({0})",   "ArcTan[{0}]");
+
 
 // CONSTANTS
 #[derive(Debug)]

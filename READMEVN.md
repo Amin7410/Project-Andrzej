@@ -91,8 +91,7 @@ EML làm cầu nối giữa kỹ sư phần mềm và kỹ sư phần cứng:
 
 EML mang lại sự đơn giản triệt để cho việc xử lý biểu thức toán học trong phần mềm:
 
-- Thay vì phải viết code xử lý cho hàng chục phép toán khác nhau (+, -, sin, cos...), phần mềm của bạn chỉ cần xử lý một **ngữ pháp phi ngữ cảnh cực kỳ đơn giản**:
-$$S \rightarrow 1 \mid eml(S, S) $$$
+- Thay vì phải viết code xử lý cho hàng chục phép toán khác nhau (+, -, sin, cos...), phần mềm của bạn chỉ cần xử lý một **ngữ pháp phi ngữ cảnh cực kỳ đơn giản**: S -> 1|eml(S, S)
 
 - Điều này giúp các hệ thống lưu trữ, phân tích cú pháp (parser) hoặc xử lý hình thức các biểu thức toán học trở nên vô cùng đồng nhất. Mọi biểu thức — dù phức tạp đến đâu — đều được biểu diễn bằng cùng một cấu trúc dữ liệu, cùng một thuật toán duyệt cây, và cùng một logic đánh giá. Không còn ngoại lệ, không còn rẽ nhánh đặc biệt.
 

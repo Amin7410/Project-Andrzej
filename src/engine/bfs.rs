@@ -8,6 +8,7 @@ use crate::ops::registry::OperatorRegistry;
 use crate::result::SearchResult;
 use dashmap::DashMap;
 use rayon::prelude::*;
+use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
 /// Executes a parallel Breadth-First Search (BFS) for symbolic regression.
@@ -22,7 +23,7 @@ pub fn run_bfs(
     inputs: &[Vec<f64>],
     ys: &[f64],
     config: &SearchConfig,
-) -> Result<SearchResult, EmlError> {
+) -> Result<Vec<SearchResult>, EmlError> {
     if inputs.is_empty() || ys.is_empty() || inputs.len() != ys.len() {
         return Err(EmlError::invalid(
             "Inputs and target vector must be non-empty and equal length.",
@@ -39,7 +40,7 @@ pub fn run_bfs(
     let targets: Vec<f64> = ys.to_vec();
 
     let seen: Arc<DashMap<Fingerprint, ()>> = Arc::new(DashMap::new());
-    let best: Arc<Mutex<Option<(f64, Expression)>>> = Arc::new(Mutex::new(None));
+    let front: Arc<Mutex<BTreeMap<usize, (f64, Expression)>>> = Arc::new(Mutex::new(BTreeMap::new()));
 
     let mut levels: Vec<Vec<Expression>> = vec![Vec::new(); config.max_complexity + 1];
 
@@ -56,7 +57,7 @@ pub fn run_bfs(
         );
         if let Some(fp) = fingerprint(&expr, &registry) {
             if seen.insert(fp, ()).is_none() {
-                score_and_update(&expr, &data_inputs, &targets, config, &best, &registry);
+                score_and_update(&expr, &data_inputs, &targets, config, &front, &registry);
                 levels[1].push(expr);
             }
         }
@@ -66,14 +67,14 @@ pub fn run_bfs(
         let expr = Expression::variable(i as u8, format!("v_{{{i}}}"));
         if let Some(fp) = fingerprint(&expr, &registry) {
             if seen.insert(fp, ()).is_none() {
-                score_and_update(&expr, &data_inputs, &targets, config, &best, &registry);
+                score_and_update(&expr, &data_inputs, &targets, config, &front, &registry);
                 levels[1].push(expr);
             }
         }
     }
 
-    if check_early_exit(&best, config) {
-        return finalize_result(best, registry, config);
+    if check_early_exit(&front, config) {
+        return finalize_result(front, registry, config);
     }
 
     println!(
@@ -184,7 +185,7 @@ pub fn run_bfs(
         for (expr, error_with_penalty) in &scored_candidates {
             let raw_error =
                 *error_with_penalty / (1.0 + expr.complexity() as f64 * config.complexity_penalty);
-            update_best(&best, expr, raw_error);
+            update_pareto(&front, expr, raw_error);
         }
 
         let mut final_next = scored_candidates;
@@ -201,12 +202,12 @@ pub fn run_bfs(
             levels[k].len()
         );
 
-        if check_early_exit(&best, config) {
+        if check_early_exit(&front, config) {
             break;
         }
     }
 
-    finalize_result(best, registry, config)
+    finalize_result(front, registry, config)
 }
 
 fn compute_raw_error(
@@ -234,14 +235,17 @@ fn compute_raw_error(
     mse.sqrt()
 }
 
-fn update_best(best: &Mutex<Option<(f64, Expression)>>, expr: &Expression, error: f64) {
-    let mut guard = best.lock().unwrap();
-    let update = match guard.as_ref() {
+fn update_pareto(front: &Mutex<BTreeMap<usize, (f64, Expression)>>, expr: &Expression, error: f64) {
+    let mut guard = front.lock().unwrap();
+    let comp = expr.complexity();
+    
+    let should_insert = match guard.get(&comp) {
         None => true,
         Some((prev_error, _)) => error < *prev_error,
     };
-    if update {
-        *guard = Some((error, expr.clone()));
+    
+    if should_insert {
+        guard.insert(comp, (error, expr.clone()));
     }
 }
 
@@ -250,21 +254,21 @@ fn score_and_update(
     inputs: &[Vec<Value>],
     targets: &[f64],
     _config: &SearchConfig,
-    best: &Mutex<Option<(f64, Expression)>>,
+    front: &Mutex<BTreeMap<usize, (f64, Expression)>>,
     reg: &OperatorRegistry,
 ) {
     let error = compute_raw_error(expr, inputs, targets, reg);
     if error.is_finite() {
-        update_best(best, expr, error);
+        update_pareto(front, expr, error);
     }
 }
 
-fn check_early_exit(best: &Mutex<Option<(f64, Expression)>>, config: &SearchConfig) -> bool {
+fn check_early_exit(front: &Mutex<BTreeMap<usize, (f64, Expression)>>, config: &SearchConfig) -> bool {
     if config.allow_approximate {
         return false;
     }
-    let guard = best.lock().unwrap();
-    if let Some((error, _)) = guard.as_ref() {
+    let guard = front.lock().unwrap();
+    for (error, _) in guard.values() {
         if *error <= config.precision_goal {
             return true;
         }
@@ -273,15 +277,29 @@ fn check_early_exit(best: &Mutex<Option<(f64, Expression)>>, config: &SearchConf
 }
 
 fn finalize_result(
-    best: Arc<Mutex<Option<(f64, Expression)>>>,
+    front: Arc<Mutex<BTreeMap<usize, (f64, Expression)>>>,
     reg: Arc<OperatorRegistry>,
     config: &SearchConfig,
-) -> Result<SearchResult, EmlError> {
-    let guard = best.lock().unwrap();
-    match guard.as_ref() {
-        Some((error, expr)) => Ok(SearchResult::new(expr.clone(), *error, reg)),
-        None => Err(EmlError::NotFound {
+) -> Result<Vec<SearchResult>, EmlError> {
+    let guard = front.lock().unwrap();
+    if guard.is_empty() {
+        return Err(EmlError::NotFound {
             max_complexity: config.max_complexity,
-        }),
+        });
     }
+
+    let mut results = Vec::new();
+    let mut current_best_error = f64::INFINITY;
+    
+    for (&_comp, (error, expr)) in guard.iter() {
+        // Strict Pareto dominance: only keep if strictly better than all simpler ones
+        if *error < current_best_error {
+            results.push(SearchResult::new(expr.clone(), *error, Arc::clone(&reg)));
+            current_best_error = *error;
+        }
+    }
+    
+    // Reverse to put the absolute best (lowest error, highest complexity) at index 0
+    results.reverse();
+    Ok(results)
 }

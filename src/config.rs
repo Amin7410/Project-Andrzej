@@ -109,7 +109,7 @@ impl Default for SearchConfig {
             max_pool_size: 300_000,
 
             beam_width: 2_000,
-            complexity_penalty: 0.05,
+            complexity_penalty: 0.1,
             optimize_constants: true,
         }
     }
