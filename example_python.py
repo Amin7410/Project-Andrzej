@@ -8,7 +8,8 @@ def main():
 
     # 1. Initialize the searcher
     # max_complexity=10 is a good starting point for discovery
-    searcher = eml_sr.Searcher(max_complexity=10)
+    # beam_width=200 ensures fast search with low memory usage
+    searcher = eml_sr.Searcher(max_complexity=10, beam_width=500)
 
     # 2. Example: Identify a constant
     print("\n[Task] Identifying constant: 3.1415926535...")
@@ -45,10 +46,25 @@ def main():
 
     # 5. Example: Pareto-Front (Multiple candidates)
     print("\n[Task] Exploring the Pareto-Front for f(x) = sin(x) + 1")
-    candidates = searcher.find_candidates(xs, ys)
+    # find_candidates expects a 2D array, so we reshape xs to (N, 1)
+    xs_2d = xs.reshape(-1, 1)
+    candidates = searcher.find_candidates(xs_2d, ys)
     print(f"      Found {len(candidates)} candidates on the Pareto Front:")
     for i, c in enumerate(candidates):
         print(f"      [{i+1}] Error: {c.error:.2e} | Complexity: {c.complexity:2} | Formula: {c.formula}")
+
+    # 6. The EML Challenge: Finding a complex law concisely
+    # Target: f(x) = exp(x) - ln(x + 5)
+    print("\n[Task] EML Challenge: Discovering f(x) = e^x - ln(x + 5)")
+    xs_challenge = np.linspace(1, 10, 20)
+    ys_challenge = np.exp(xs_challenge) - np.log(xs_challenge + 5.0)
+    
+    # EML should find this as EML(v0, v0 + 5) which is complexity 3
+    # Traditional ops would need Exp(v0) - Log(v0 + 5) which is complexity 5
+    result = searcher.find_function(xs_challenge, ys_challenge)
+    print(f"      Formula:    {result.formula}")
+    print(f"      Simplified: {result.to_python()}")
+    print(f"      Complexity: {result.complexity} (Standard ops would need 5+)")
 
     print("\n===========================================================")
 

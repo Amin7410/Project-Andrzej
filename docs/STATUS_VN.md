@@ -2,9 +2,9 @@
 
 Tài liệu này cung cấp cái nhìn rõ ràng về những gì `eml_sr` có thể làm được hiện nay, những lợi ích cốt lõi và các hạn chế quan trọng mà bạn cần lưu ý để đảm bảo trải nghiệm mượt mà.
 
-## Tình trạng hiện tại (v0.1.0)
+## Tình trạng hiện tại (v0.1.3)
 
-`eml_sr` hiện đang ở giai đoạn phát hành sớm ổn định. Thư viện đã sẵn sàng cho các nhiệm vụ sau:
+`eml_sr` hiện đang ở giai đoạn sản xuất ổn định. Thư viện đã sẵn sàng cho các nhiệm vụ sau:
 - **Hồi quy Đơn biến & Đa biến**: Tìm kiếm công thức cho các hàm có một hoặc nhiều biến số.
 - **Khám phá Pareto-Front**: Trả về danh sách các công thức ứng viên được tối ưu hóa cân bằng giữa độ chính xác và độ phức tạp.
 - **Tinh chỉnh Hằng số**: Tích hợp bộ tối ưu hóa Levenberg-Marquardt để xác định hằng số với độ chính xác cao.

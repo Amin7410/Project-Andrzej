@@ -2,9 +2,9 @@
 
 This document provides a clear overview of what `eml_sr` can do today, its core benefits, and critical limitations you should be aware of to ensure a smooth experience.
 
-## Current Status (v0.1.0)
+## Current Status (v0.1.3)
 
-`eml_sr` is currently in its stable early release phase. It is functional and production-ready for the following tasks:
+`eml_sr` is currently in its stable production-ready phase. It is functional for the following tasks:
 - **Univariate & Multivariate Regression**: Discovery of formulas for functions with one or more variables.
 - **Pareto-Front Discovery**: Returns a list of candidate formulas optimized for the balance between accuracy and complexity.
 - **Constant Refinement**: Integrated Levenberg-Marquardt optimizer for high-precision constant identification.

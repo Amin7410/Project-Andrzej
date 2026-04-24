@@ -1,6 +1,6 @@
 [package]
 name = "eml_sr"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "Symbolic regression via the EML operator — find the math formula hidden in your data"
 authors = ["Andrzej Odrzywolek <andrzej.odrzywolek@uj.edu.pl>", "Minh Dinh Khoi <minhdinhkhoi@gmail.com>"]

@@ -103,11 +103,12 @@ pub struct PySearcher {
 #[pymethods]
 impl PySearcher {
     #[new]
-    #[pyo3(signature = (max_complexity=10, complexity_penalty=0.1))]
-    fn new(max_complexity: usize, complexity_penalty: f64) -> Self {
+    #[pyo3(signature = (max_complexity=10, complexity_penalty=0.1, beam_width=1000))]
+    fn new(max_complexity: usize, complexity_penalty: f64, beam_width: usize) -> Self {
         let mut config = SearchConfig::default();
         config.max_complexity = max_complexity;
         config.complexity_penalty = complexity_penalty;
+        config.beam_width = beam_width;
         Self {
             inner: RustSearcher::new(config),
         }

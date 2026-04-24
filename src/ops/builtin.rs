@@ -121,6 +121,8 @@ pub fn seed_constants() -> Vec<Box<dyn Operator>> {
         Box::new(ConstOp { name: "0",  value: real(0.0),  latex: "0",       python: "0" }),
         Box::new(ConstOp { name: "1",  value: real(1.0),  latex: "1",       python: "1" }),
         Box::new(ConstOp { name: "I",  value: unit_i(),   latex: "i",       python: "1j" }),
+        Box::new(ConstOp { name: "Pi", value: real(std::f64::consts::PI), latex: r"\pi", python: "np.pi" }),
+        Box::new(ConstOp { name: "E",  value: real(std::f64::consts::E),  latex: "e",    python: "np.e" }),
     ]
 }
 

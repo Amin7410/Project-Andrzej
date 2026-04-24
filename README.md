@@ -12,11 +12,11 @@
 | **Python / Pip** | `pip install eml_sr` | [pypi.org](https://pypi.org/project/eml-sr/) |
 
 ## Introduction
-**eml_sr** is a high-performance Rust library that implements one of the deepest structural discoveries in continuous mathematics: **All elementary functions can be represented using just a single binary operator.**
+**eml_sr** is a high-performance Rust library built around one of the deepest structural discoveries in continuous mathematics: **All elementary functions can be represented using the EML operator.**
 
-In the world of digital electronics, the NAND gate is the fundamental building block for every complex logic circuit. Similarly, **eml_sr** provides a "NAND gate for continuous mathematics." This library allows developers to compile any complex formula (from basic arithmetic to trigonometry, logarithms, and transcendental constants) into an absolutely uniform binary tree structure.
+In the world of digital electronics, the NAND gate is the fundamental building block. Similarly, **eml_sr** provides the "EML operator" as a universal bridge for continuous mathematics. This library allows developers to represent complex formulas using either a uniform EML-only structure or a high-performance hybrid structure that combines EML with optimized standard operators.
 
-Instead of maintaining a cumbersome Abstract Syntax Tree (AST) with dozens of different node types (Add, Sub, Sin, Cos, Exp), **eml_sr** collapses your entire architecture down to exactly one single node type.
+Instead of relying solely on cumbersome Abstract Syntax Trees (AST), **eml_sr** gives you the power to streamline your mathematical architecture using EML as the unifying core.
 
 ## Paradigm Shift with EML
 
@@ -30,8 +30,8 @@ When building an Abstract Syntax Tree (AST) for a mathematical expression:
     *   **Challenges**: When writing formula transformation algorithms (like auto-differentiation or expression simplification), developers must handle countless branch cases (switch-case) for each operator.
 
 *   **The EML Approach (Homogeneous Binary Tree)**:
-    Reduces the entire mathematical space to a single node type: `EmlNode`.
-    *   **Value Proposition**: The diversity of mathematics is "compressed" into a uniform graph structure. Tree traversal, parsing, or structural transformation now only require a single recursive rule. Your core code becomes ultra-thin and extremely safe.
+    Reduces the complexity of mathematical spaces by using `EmlNode` as a unifying structure.
+    *   **Value Proposition**: The diversity of mathematics is "compressed" into a streamlined graph structure. Whether using pure EML or optimized hybrids, your core code remains lean, predictable, and extremely safe.
 
 ### 2. Artificial Intelligence (Symbolic Regression): From Discrete Search to Continuous Optimization
 In tasks where AI is required to automatically discover formulas from raw data:
@@ -42,6 +42,16 @@ In tasks where AI is required to automatically discover formulas from raw data:
 *   **The EML Approach (Continuous Optimization)**:
     Completely skips the function selection step. The AI is provided with a "Master Formula" – a massive EML tree containing all possibilities of elementary functions.
     *   **Value Proposition**: EML turns the difficult "combinatorial search" problem into a smooth "Gradient Optimization" problem. By using standard optimizers (like Adam) on the tree branches and rounding weights (snapping), Neural Networks can automatically prune and reveal sharp, precise physical and mathematical laws, fundamentally solving the "black box" problem of AI.
+
+### 3. The EML: Efficiency Meets Universality
+
+To understand the unique value of **eml_sr**, think of the relationship between Standard Operators and the EML Operator:
+
+*   **Standard Operators (Sin, Cos, Pi, E...) are like "Lego Bricks"**: They are pre-shaped components. If you want to build a standard house, using Lego is fast and efficient. These are our "High-Speed Shortcuts" for discovering known mathematical laws.
+*   **The EML Operator is like "Clay"**: You can mold clay into *any* shape. While you can use clay to make a brick, its true power lies in creating complex, organic forms that no Lego brick could ever represent.
+
+In **eml_sr**, we combine both. We provide standard constants and functions to ensure the engine is lightning-fast for common tasks. But we keep **EML at the core** to ensure the engine is never limited. When traditional mathematics encounters an unknown relationship, EML acts as the universal discovery engine to find laws that don't have a name yet.
+
 
 > [!NOTE]
 > **💡 Note on Architecture & Trade-offs**: The absolute uniformity of EML comes with trade-offs regarding expression tree depth and strict requirements for floating-point precision. To understand these issues better, please see my personal analysis and discussion in [docs/WHATITHINK.txt](docs/WHATITHINK.txt).
@@ -96,7 +106,7 @@ EML brings radical simplicity to the processing of mathematical expressions in s
 - Instead of writing handling code for dozens of different operations (+, -, sin, cos...), your software only needs to handle one **extremely simple context-free grammar**:
 S -> 1|eml(S, S)
 
-- This makes systems for storage, parsing, or formal processing of mathematical expressions incredibly uniform. Every expression — no matter how complex — is represented by the same data structure, the same tree traversal algorithm, and the same evaluation logic. No more exceptions, no more special branching.
+- This makes systems for storage, parsing, or formal processing of mathematical expressions incredibly efficient. Every expression — no matter how complex — can be reduced to a highly uniform structure, simplifying evaluation logic and reducing architectural overhead.
 
 ## Quick Start
 

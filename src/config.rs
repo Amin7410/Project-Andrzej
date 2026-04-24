@@ -108,7 +108,7 @@ impl Default for SearchConfig {
             parallelism: rayon::current_num_threads(),
             max_pool_size: 300_000,
 
-            beam_width: 1_000,
+            beam_width: 200,
             complexity_penalty: 0.1,
             optimize_constants: true,
         }
