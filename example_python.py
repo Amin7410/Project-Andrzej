@@ -6,10 +6,11 @@ def main():
     print("      EML-SR PYTHON INTERFACE DEMO                         ")
     print("===========================================================")
 
-    # 1. Initialize the searcher
-    # max_complexity=10 is a good starting point for discovery
+    # max_complexity=6 is the standard research setting (completes in seconds)
     # beam_width=200 ensures fast search with low memory usage
-    searcher = eml_sr.Searcher(max_complexity=10, beam_width=500)
+    searcher = eml_sr.Searcher(max_complexity=7, beam_width=400)
+    print(f"      max_complexity:    {searcher.max_complexity}")
+    print(f"      beam_width:    {searcher.beam_width}")
 
     # 2. Example: Identify a constant
     print("\n[Task] Identifying constant: 3.1415926535...")

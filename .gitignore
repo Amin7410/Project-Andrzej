@@ -14,6 +14,7 @@ Cargo.lock
 flycheck*
 target_temp/
 scratch_lib_downloads/
+paper/
 
 # Python and Maturin build artifacts
 __pycache__/
@@ -24,3 +25,6 @@ build/
 dist/
 *.whl
 *.egg-info/
+
+# Generated tests
+Test/

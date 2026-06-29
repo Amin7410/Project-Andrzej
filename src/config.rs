@@ -93,6 +93,10 @@ pub struct SearchConfig {
     pub complexity_penalty: f64,
     /// Enable iterative constant refinement via Levenberg-Marquardt.
     pub optimize_constants: bool,
+    /// Elastic Net penalty multiplier (0.0 means no penalty).
+    pub alpha: f64,
+    /// Elastic Net L1 ratio (0.5 means 50% L1, 50% L2).
+    pub l1_ratio: f64,
 }
 
 impl Default for SearchConfig {
@@ -111,6 +115,8 @@ impl Default for SearchConfig {
             beam_width: 200,
             complexity_penalty: 0.1,
             optimize_constants: true,
+            alpha: 0.0,
+            l1_ratio: 0.5,
         }
     }
 }
@@ -159,6 +165,14 @@ impl SearchConfigBuilder {
     }
     pub fn optimize_constants(mut self, optimize: bool) -> Self {
         self.inner.optimize_constants = optimize;
+        self
+    }
+    pub fn alpha(mut self, alpha: f64) -> Self {
+        self.inner.alpha = alpha;
+        self
+    }
+    pub fn l1_ratio(mut self, l1_ratio: f64) -> Self {
+        self.inner.l1_ratio = l1_ratio;
         self
     }
     pub fn build(self) -> SearchConfig {

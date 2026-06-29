@@ -44,22 +44,12 @@ pub fn run_bfs(
 
     let mut levels: Vec<Vec<Expression>> = vec![Vec::new(); config.max_complexity + 1];
 
-    for id in registry.ids_by_arity(0) {
-        let meta = registry.meta(id);
-        let val = registry.eval(id, &[]).unwrap();
-        let expr = Expression::new(
-            vec![Node::Const {
-                value: val,
-                op_id: id,
-            }],
-            0,
-            meta.name.clone(),
-        );
-        if let Some(fp) = fingerprint(&expr, &registry) {
-            if seen.insert(fp, ()).is_none() {
-                score_and_update(&expr, &data_inputs, &targets, config, &front, &registry);
-                levels[1].push(expr);
-            }
+    // Seed abstract parameter Param(C)
+    let expr = Expression::parameter();
+    if let Some(fp) = fingerprint(&expr, &registry) {
+        if seen.insert(fp, ()).is_none() {
+            score_and_update(&expr, &data_inputs, &targets, config, &front, &registry);
+            levels[1].push(expr);
         }
     }
 
@@ -74,7 +64,7 @@ pub fn run_bfs(
     }
 
     if check_early_exit(&front, config) {
-        return finalize_result(front, registry, config);
+        return finalize_result(front, registry, config, &data_inputs, &targets);
     }
 
     println!(
@@ -101,6 +91,7 @@ pub fn run_bfs(
                     let expr = Expression::new(
                         nodes,
                         child.var_count(),
+                        child.param_count(),
                         format!("{}({})", reg.meta(uid).name, child.display()),
                     );
                     if let Some(fp) = fingerprint(&expr, &reg) {
@@ -128,10 +119,16 @@ pub fn run_bfs(
                         for &bid in &binary_ids {
                             let meta = reg_bin.meta(bid);
                             if meta.is_commutative && lk == rk && left.display() > right.display() {
-                                continue;
+                                  continue;
                             }
                             let mut nodes = left.nodes.clone();
-                            nodes.extend_from_slice(&right.nodes);
+                            let mut right_nodes = right.nodes.clone();
+                            for node in &mut right_nodes {
+                                if let Node::Param { id, .. } = node {
+                                    *id += left.param_count();
+                                }
+                            }
+                            nodes.extend_from_slice(&right_nodes);
                             nodes.push(Node::Op {
                                 op_id: bid,
                                 arity: 2,
@@ -139,6 +136,7 @@ pub fn run_bfs(
                             let expr = Expression::new(
                                 nodes,
                                 left.var_count().max(right.var_count()),
+                                left.param_count() + right.param_count(),
                                 format!("{}({}, {})", meta.name, left.display(), right.display()),
                             );
                             if let Some(fp) = fingerprint(&expr, &reg_bin) {
@@ -157,15 +155,49 @@ pub fn run_bfs(
         let mut all_candidates = new_unary;
         all_candidates.extend(binary_candidates);
 
+        let total_candidates = all_candidates.len();
+        let counter = std::sync::atomic::AtomicUsize::new(0);
+        let last_logged_percent = std::sync::atomic::AtomicUsize::new(0);
+        let start_instant = std::time::Instant::now();
+
         let scored_candidates: Vec<(Expression, f64)> = all_candidates
             .into_par_iter()
             .filter_map(|mut expr| {
-                let mut error = compute_raw_error(&expr, &data_inputs, &targets, &reg);
+                if total_candidates > 0 {
+                    let current_count = counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+                    let current_percent = (current_count * 10) / total_candidates;
+                    
+                    let mut logged = last_logged_percent.load(std::sync::atomic::Ordering::Relaxed);
+                    while current_percent > logged && logged < 10 {
+                        if last_logged_percent.compare_exchange_weak(
+                            logged,
+                            current_percent,
+                            std::sync::atomic::Ordering::Relaxed,
+                            std::sync::atomic::Ordering::Relaxed,
+                        ).is_ok() {
+                            let elapsed = start_instant.elapsed().as_secs_f64();
+                            let est_total = (elapsed * 10.0) / (current_percent as f64);
+                            let est_remaining = est_total - elapsed;
+                            println!(
+                                "  [EML-SR]      -> Progress: {}0% completed ({} / {} candidates evaluated) in {:.1}s (Est. remaining: {:.1}s)",
+                                current_percent,
+                                current_count,
+                                total_candidates,
+                                elapsed,
+                                est_remaining
+                            );
+                            break;
+                        }
+                        logged = last_logged_percent.load(std::sync::atomic::Ordering::Relaxed);
+                    }
+                }
 
-                // Tighten optimization threshold to save CPU cycles (only optimize if very promising < 2.0)
-                if config.optimize_constants && error.is_finite() && error < 2.0 {
+                let mut error = compute_raw_error(&expr, &data_inputs, &targets, &reg, config.alpha, config.l1_ratio);
+
+                // For search steps, run light parameter optimization (e.g. 10 iterations)
+                if config.optimize_constants && expr.param_count() > 0 {
                     let (refined_expr, refined_error) =
-                        optimizer::refine_constants(&expr, &data_inputs, &targets, &reg);
+                        optimizer::refine_constants(&expr, &data_inputs, &targets, &reg, config.alpha, config.l1_ratio, 10);
                     if refined_error < error {
                         expr = refined_expr;
                         error = refined_error;
@@ -207,7 +239,7 @@ pub fn run_bfs(
         }
     }
 
-    finalize_result(front, registry, config)
+    finalize_result(front, registry, config, &data_inputs, &targets)
 }
 
 fn compute_raw_error(
@@ -215,6 +247,8 @@ fn compute_raw_error(
     inputs: &[Vec<Value>],
     targets: &[f64],
     reg: &OperatorRegistry,
+    alpha: f64,
+    l1_ratio: f64,
 ) -> f64 {
     let mut predicted = Vec::with_capacity(inputs.len());
     for row in inputs {
@@ -232,7 +266,25 @@ fn compute_raw_error(
         .map(|(p, a)| (p - a).powi(2))
         .sum::<f64>()
         / targets.len() as f64;
-    mse.sqrt()
+
+    let mut l1 = 0.0;
+    let mut l2 = 0.0;
+    for node in &expr.nodes {
+        match node {
+            Node::Num(val) => {
+                l1 += val.abs();
+                l2 += val * val;
+            }
+            Node::Param { initial_value, .. } => {
+                l1 += initial_value.re.abs();
+                l2 += initial_value.re * initial_value.re;
+            }
+            _ => {}
+        }
+    }
+    let penalty = alpha * (l1_ratio * l1 + 0.5 * (1.0 - l1_ratio) * l2);
+
+    mse + penalty
 }
 
 fn update_pareto(front: &Mutex<BTreeMap<usize, (f64, Expression)>>, expr: &Expression, error: f64) {
@@ -253,11 +305,11 @@ fn score_and_update(
     expr: &Expression,
     inputs: &[Vec<Value>],
     targets: &[f64],
-    _config: &SearchConfig,
+    config: &SearchConfig,
     front: &Mutex<BTreeMap<usize, (f64, Expression)>>,
     reg: &OperatorRegistry,
 ) {
-    let error = compute_raw_error(expr, inputs, targets, reg);
+    let error = compute_raw_error(expr, inputs, targets, reg, config.alpha, config.l1_ratio);
     if error.is_finite() {
         update_pareto(front, expr, error);
     }
@@ -280,6 +332,8 @@ fn finalize_result(
     front: Arc<Mutex<BTreeMap<usize, (f64, Expression)>>>,
     reg: Arc<OperatorRegistry>,
     config: &SearchConfig,
+    inputs: &[Vec<Value>],
+    targets: &[f64],
 ) -> Result<Vec<SearchResult>, EmlError> {
     let guard = front.lock().unwrap();
     if guard.is_empty() {
@@ -292,10 +346,20 @@ fn finalize_result(
     let mut current_best_error = f64::INFINITY;
     
     for (&_comp, (error, expr)) in guard.iter() {
+        let mut final_expr = expr.clone();
+        let mut final_error = *error;
+
+        // Perform final deep parameter optimization (e.g. 30 iterations) for accuracy
+        if config.optimize_constants && final_expr.param_count() > 0 {
+            let (refined, err) = optimizer::refine_constants(&final_expr, inputs, targets, &reg, config.alpha, config.l1_ratio, 30);
+            final_expr = refined;
+            final_error = err;
+        }
+
         // Strict Pareto dominance: only keep if strictly better than all simpler ones
-        if *error < current_best_error {
-            results.push(SearchResult::new(expr.clone(), *error, Arc::clone(&reg)));
-            current_best_error = *error;
+        if final_error < current_best_error {
+            results.push(SearchResult::new(final_expr, final_error, Arc::clone(&reg)));
+            current_best_error = final_error;
         }
     }
     

@@ -103,25 +103,57 @@ pub struct PySearcher {
 #[pymethods]
 impl PySearcher {
     #[new]
-    #[pyo3(signature = (max_complexity=10, complexity_penalty=0.1, beam_width=1000))]
-    fn new(max_complexity: usize, complexity_penalty: f64, beam_width: usize) -> Self {
+    #[pyo3(signature = (max_complexity=10, complexity_penalty=0.1, beam_width=1000, alpha=0.0, l1_ratio=0.5))]
+    fn new(max_complexity: usize, complexity_penalty: f64, beam_width: usize, alpha: f64, l1_ratio: f64) -> Self {
         let mut config = SearchConfig::default();
         config.max_complexity = max_complexity;
         config.complexity_penalty = complexity_penalty;
         config.beam_width = beam_width;
+        config.alpha = alpha;
+        config.l1_ratio = l1_ratio;
         Self {
             inner: RustSearcher::new(config),
         }
     }
 
+    #[getter]
+    fn max_complexity(&self) -> usize {
+        self.inner.config.max_complexity
+    }
+
+    #[getter]
+    fn beam_width(&self) -> usize {
+        self.inner.config.beam_width
+    }
+
+    #[getter]
+    fn complexity_penalty(&self) -> f64 {
+        self.inner.config.complexity_penalty
+    }
+
+    #[getter]
+    fn alpha(&self) -> f64 {
+        self.inner.config.alpha
+    }
+
+    #[getter]
+    fn l1_ratio(&self) -> f64 {
+        self.inner.config.l1_ratio
+    }
+
     /// Finds a univariate function f(x) ≈ y.
     /// Supports both Python lists and NumPy arrays.
-    #[pyo3(signature = (xs, ys))]
-    fn find_function(&self, xs: Bound<'_, PyAny>, ys: Bound<'_, PyAny>) -> PyResult<PySearchResult> {
+    #[pyo3(signature = (xs, ys, alpha=None, l1_ratio=None))]
+    fn find_function(&self, xs: Bound<'_, PyAny>, ys: Bound<'_, PyAny>, alpha: Option<f64>, l1_ratio: Option<f64>) -> PyResult<PySearchResult> {
         let x_vec: Vec<f64> = convert_to_vec(xs)?;
         let y_vec: Vec<f64> = convert_to_vec(ys)?;
 
-        self.inner
+        let mut config = self.inner.config.clone();
+        if let Some(a) = alpha { config.alpha = a; }
+        if let Some(lr) = l1_ratio { config.l1_ratio = lr; }
+        let searcher = RustSearcher::new(config);
+
+        searcher
             .find_function(&x_vec, &y_vec)
             .map(|inner| PySearchResult { inner })
             .map_err(map_error)
@@ -129,30 +161,40 @@ impl PySearcher {
 
     /// Finds a multivariate function f(x0, x1, ...) ≈ y.
     /// Inputs should be a 2D array-like structure.
-    #[pyo3(signature = (inputs, ys))]
-    fn find_multivariate(&self, inputs: Bound<'_, PyAny>, ys: Bound<'_, PyAny>) -> PyResult<PySearchResult> {
+    #[pyo3(signature = (inputs, ys, alpha=None, l1_ratio=None))]
+    fn find_multivariate(&self, inputs: Bound<'_, PyAny>, ys: Bound<'_, PyAny>, alpha: Option<f64>, l1_ratio: Option<f64>) -> PyResult<PySearchResult> {
         let input_matrix: Vec<Vec<f64>> = convert_to_matrix(inputs)?;
         let y_vec: Vec<f64> = convert_to_vec(ys)?;
 
-        self.inner
+        let mut config = self.inner.config.clone();
+        if let Some(a) = alpha { config.alpha = a; }
+        if let Some(lr) = l1_ratio { config.l1_ratio = lr; }
+        let searcher = RustSearcher::new(config);
+
+        searcher
             .find_multivariate(&input_matrix, &y_vec)
             .map(|inner| PySearchResult { inner })
             .map_err(map_error)
     }
 
     /// Alias for find_multivariate (Scikit-Learn style).
-    #[pyo3(signature = (inputs, ys))]
-    fn fit(&self, inputs: Bound<'_, PyAny>, ys: Bound<'_, PyAny>) -> PyResult<PySearchResult> {
-        self.find_multivariate(inputs, ys)
+    #[pyo3(signature = (inputs, ys, alpha=None, l1_ratio=None))]
+    fn fit(&self, inputs: Bound<'_, PyAny>, ys: Bound<'_, PyAny>, alpha: Option<f64>, l1_ratio: Option<f64>) -> PyResult<PySearchResult> {
+        self.find_multivariate(inputs, ys, alpha, l1_ratio)
     }
 
     /// Returns the Pareto-front of all candidate formulas found.
-    #[pyo3(signature = (inputs, ys))]
-    fn find_candidates(&self, inputs: Bound<'_, PyAny>, ys: Bound<'_, PyAny>) -> PyResult<Vec<PySearchResult>> {
+    #[pyo3(signature = (inputs, ys, alpha=None, l1_ratio=None))]
+    fn find_candidates(&self, inputs: Bound<'_, PyAny>, ys: Bound<'_, PyAny>, alpha: Option<f64>, l1_ratio: Option<f64>) -> PyResult<Vec<PySearchResult>> {
         let input_matrix: Vec<Vec<f64>> = convert_to_matrix(inputs)?;
         let y_vec: Vec<f64> = convert_to_vec(ys)?;
 
-        self.inner
+        let mut config = self.inner.config.clone();
+        if let Some(a) = alpha { config.alpha = a; }
+        if let Some(lr) = l1_ratio { config.l1_ratio = lr; }
+        let searcher = RustSearcher::new(config);
+
+        searcher
             .find_candidates(&input_matrix, &y_vec)
             .map(|results| {
                 results
@@ -164,8 +206,14 @@ impl PySearcher {
     }
 
     /// Identifies a closed-form expression for a scalar constant.
-    fn recognize_constant(&self, value: f64) -> PyResult<PySearchResult> {
-        self.inner
+    #[pyo3(signature = (value, alpha=None, l1_ratio=None))]
+    fn recognize_constant(&self, value: f64, alpha: Option<f64>, l1_ratio: Option<f64>) -> PyResult<PySearchResult> {
+        let mut config = self.inner.config.clone();
+        if let Some(a) = alpha { config.alpha = a; }
+        if let Some(lr) = l1_ratio { config.l1_ratio = lr; }
+        let searcher = RustSearcher::new(config);
+
+        searcher
             .recognize_constant(value)
             .map(|inner| PySearchResult { inner })
             .map_err(map_error)

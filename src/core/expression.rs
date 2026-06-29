@@ -20,17 +20,19 @@ pub enum Node {
 pub struct Expression {
     pub(crate) nodes: Vec<Node>,
     pub(crate) var_count: u8,
+    pub(crate) param_count: u8,
     pub(crate) complexity: usize,
     display: String,
 }
 
 impl Expression {
     /// Constructs a new expression from a sequence of nodes.
-    pub fn new(nodes: Vec<Node>, var_count: u8, display: String) -> Self {
+    pub fn new(nodes: Vec<Node>, var_count: u8, param_count: u8, display: String) -> Self {
         let complexity = nodes.len();
         Self {
             nodes,
             var_count,
+            param_count,
             complexity,
             display,
         }
@@ -38,12 +40,22 @@ impl Expression {
 
     /// Constructs a constant expression.
     pub fn constant(value: Value, op_id: usize, name: impl Into<String>) -> Self {
-        Self::new(vec![Node::Const { value, op_id }], 0, name.into())
+        Self::new(vec![Node::Const { value, op_id }], 0, 0, name.into())
     }
 
     /// Constructs a variable reference expression.
     pub fn variable(index: u8, name: impl Into<String>) -> Self {
-        Self::new(vec![Node::Var(index)], index + 1, name.into())
+        Self::new(vec![Node::Var(index)], index + 1, 0, name.into())
+    }
+
+    /// Constructs a parameter placeholder expression.
+    pub fn parameter() -> Self {
+        Self::new(
+            vec![Node::Param { id: 0, initial_value: crate::core::value::real(1.0) }],
+            0,
+            1,
+            "C".to_string()
+        )
     }
 
     /// Evaluates the expression given a set of input values.
@@ -131,6 +143,9 @@ impl Expression {
     }
     pub fn var_count(&self) -> u8 {
         self.var_count
+    }
+    pub fn param_count(&self) -> u8 {
+        self.param_count
     }
 }
 

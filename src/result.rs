@@ -112,8 +112,8 @@ impl SearchResult {
                 Node::Var(i) => {
                     stack.push(format!("v_{{{i}}}"));
                 }
-                Node::Param { id, .. } => {
-                    stack.push(format!("p_{{{id}}}"));
+                Node::Param { initial_value, .. } => {
+                    stack.push(format!("{:.4}", initial_value.re));
                 }
                 Node::Op { op_id, arity } => {
                     let arity = *arity as usize;

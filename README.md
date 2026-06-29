@@ -1,5 +1,11 @@
 [VietNamese click here!](READMEVN.md)
 
+> [!IMPORTANT]
+> **🚀 Release v0.2.0 is out!**
+> This version introduces major optimization fixes, progress ETA logging, and a restructured test suite. Read the details in our version documentation:
+> - [Code Improvements & Fixes](docs/version_news/v0.2.0/improvements.md)
+> - [Scientific Analysis: Representation Limits & Solutions](docs/version_news/v0.2.0/issues_and_solutions.md)
+
 # eml_sr: Primitivizing Continuous Mathematics in Rust
 
 [![Crates.io](https://img.shields.io/crates/v/eml_sr.svg)](https://crates.io/crates/eml_sr)

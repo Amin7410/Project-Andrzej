@@ -26,7 +26,14 @@ cargo run --release --example 03_constant_recognition
 ### 3. Add Your Own Test Scenarios
 You can easily test any function by opening `src/tests/mod.rs` and adding a new `TestCase` to the `get_test_suite()` function. All changes will be automatically updated in the report when you run `cargo run`.
 
-### 4. Advanced Modes (Feature Flags)
+### 4. Compiling Python Bindings
+If you are developing the Python wrapper locally, you can rebuild the bindings using Maturin. In your Python virtual environment on Windows PowerShell, run:
+```powershell
+$env:PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1; .venv\Scripts\maturin.exe develop
+```
+
+
+### 5. Advanced Modes (Feature Flags)
 The library provides flexible compilation options:
 - **Default**: Uses the full library of operators for best search performance.
 - **Pure EML**: Uses only the single EML operator for theoretical research purposes.

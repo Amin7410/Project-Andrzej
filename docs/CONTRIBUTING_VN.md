@@ -27,7 +27,13 @@ cargo run --release --example 03_constant_recognition
 Bạn có thể dễ dàng kiểm tra bất kỳ hàm số nào bằng cách mở file `src/tests/mod.rs` và thêm một `TestCase` mới vào hàm `get_test_suite()`. 
 Mọi thay đổi sẽ tự động được cập nhật vào báo cáo khi bạn chạy `cargo run`.
 
-### 4. Các chế độ nâng cao (Feature Flags)
+### 4. Biên dịch Python Bindings
+Nếu bạn muốn phát triển và kiểm tra tiện ích mở rộng Python tại máy cục bộ, bạn có thể biên dịch lại bằng Maturin. Trong môi trường ảo (virtual environment) của Python trên Windows PowerShell, hãy chạy lệnh:
+```powershell
+$env:PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1; .venv\Scripts\maturin.exe develop
+```
+
+### 5. Các chế độ nâng cao (Feature Flags)
 Thư viện cung cấp các tùy chọn biên dịch linh hoạt:
 - **Mặc định**: Sử dụng toàn bộ kho toán tử để đạt hiệu suất tìm kiếm tốt nhất.
 - **Pure EML**: Chỉ sử dụng duy nhất toán tử EML cho mục đích nghiên cứu lý thuyết.
