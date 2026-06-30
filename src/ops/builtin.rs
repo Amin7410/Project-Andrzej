@@ -96,6 +96,10 @@ unary_op!(ArcSin, "ArcSin", value::c_asin,  r"\arcsin({0})",     "np.arcsin({0})
 unary_op!(ArcCos, "ArcCos", value::c_acos,  r"\arccos({0})",     "np.arccos({0})",   "ArcCos[{0}]");
 #[cfg(feature = "full-math")]
 unary_op!(ArcTan, "ArcTan", value::c_atan,  r"\arctan({0})",     "np.arctan({0})",   "ArcTan[{0}]");
+#[cfg(feature = "full-math")]
+unary_op!(Square, "Square", |x| Some(x * x), r"{{{0}}}^2",       "({0})**2",         "Power[{0},2]");
+#[cfg(feature = "full-math")]
+unary_op!(Cube,   "Cube",   |x| Some(x * x * x), r"{{{0}}}^3",     "({0})**3",         "Power[{0},3]");
 
 
 // CONSTANTS
@@ -139,6 +143,7 @@ pub fn all_builtins() -> Vec<Box<dyn Operator>> {
         ops.push(Box::new(Exp));    ops.push(Box::new(Log));    ops.push(Box::new(Sqrt));
         ops.push(Box::new(Sin));    ops.push(Box::new(Cos));    ops.push(Box::new(Tan));
         ops.push(Box::new(ArcSin)); ops.push(Box::new(ArcCos)); ops.push(Box::new(ArcTan));
+        ops.push(Box::new(Square)); ops.push(Box::new(Cube));
     }
 
     ops

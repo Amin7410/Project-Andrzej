@@ -54,8 +54,13 @@ pub fn refine_constants(
     let mut lambda = 0.01;
     let mut best_error =
         compute_error_with_params(&template.expression, &params, inputs, targets, registry, alpha, l1_ratio);
+    let mut consecutive_failures = 0;
 
     for _ in 0..max_iters {
+        if lambda > 1e4 {
+            break;
+        }
+
         let (j, r) = compute_jacobian_and_residuals(
             &template.expression,
             &params,
@@ -91,11 +96,16 @@ pub fn refine_constants(
             best_error = next_error;
             params = next_params;
             lambda /= 10.0;
+            consecutive_failures = 0;
             if (best_error - next_error).abs() < 1e-9 {
                 break;
             }
         } else {
             lambda *= 10.0;
+            consecutive_failures += 1;
+            if consecutive_failures >= 3 {
+                break;
+            }
         }
     }
 

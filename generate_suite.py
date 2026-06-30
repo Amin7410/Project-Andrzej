@@ -1,11 +1,41 @@
 import os
 import csv
 import shutil
+import ast
+
+class ComplexityEstimator(ast.NodeVisitor):
+    def __init__(self):
+        self.count = 0
+    def visit_BinOp(self, node):
+        self.count += 1
+        self.generic_visit(node)
+    def visit_UnaryOp(self, node):
+        self.count += 1
+        self.generic_visit(node)
+    def visit_Call(self, node):
+        self.count += 1
+        self.generic_visit(node)
+    def visit_Name(self, node):
+        self.count += 1
+    def visit_Constant(self, node):
+        self.count += 1
+    def visit_Num(self, node):
+        self.count += 1
+
+def estimate_complexity(formula_str):
+    formula_str = formula_str.replace("theta", "v0")
+    try:
+        tree = ast.parse(formula_str, mode='eval')
+        estimator = ComplexityEstimator()
+        estimator.visit(tree)
+        return estimator.count
+    except Exception:
+        return 8
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     csv_path = os.path.abspath(os.path.join(
-        script_dir, 'Scientific research paper from an external source',
+        script_dir, 'paper',
         'eml-sr_study', 'data', 'FeynmanEquations.csv'
     ))
     test_dir = os.path.join(script_dir, 'Test')
@@ -57,10 +87,18 @@ def main():
     # 2. Define Easy vs Difficult equations
     easy_targets = ["I.12.1", "I.12.5", "I.14.3", "I.18.12", "I.25.13", "I.26.2", "I.29.4"]
     
-    # Clean up and recreate the Test folder
+    # Clean up and recreate the Test folder, preserving Test/Pict
     if os.path.exists(test_dir):
-        shutil.rmtree(test_dir)
-    os.makedirs(test_dir, exist_ok=True)
+        for item in os.listdir(test_dir):
+            item_path = os.path.join(test_dir, item)
+            if item == 'Pict':
+                continue
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+            else:
+                os.remove(item_path)
+    else:
+        os.makedirs(test_dir, exist_ok=True)
                  
     # 3. Generate Test/test_easy.py
     easy_code = f"""import os
@@ -124,7 +162,10 @@ def generate_dataset(eq, n_samples=100, seed=42):
         point = []
         local_env = eval_env.copy()
         for name, (low, high) in zip(var_names, var_ranges):
-            val = rng.uniform(low, high)
+            current_low, current_high = low, high
+            if name in ["theta", "theta1", "theta2", "x", "y", "z", "x1", "x2", "y1", "y2", "z1", "z2"]:
+                current_low = -high
+            val = rng.uniform(current_low, current_high)
             point.append(val)
             local_env[name] = val
         try:
@@ -143,8 +184,20 @@ def main():
     eqs = load_equations()
     searcher = eml_sr.Searcher(max_complexity=6, beam_width=200)
     success = 0
+    
+    plot_dir = os.path.join('Test', 'Pict')
+    os.makedirs(plot_dir, exist_ok=True)
+    
     for eq in eqs:
         fn = eq["filename"]
+        safe_fn = fn.replace(".", "_").replace("-", "_")
+        plot_path = os.path.join(plot_dir, f"fit_{{safe_fn}}.png")
+        
+        if os.path.exists(plot_path):
+            print(f"\\n[Task] Skipping easy equation {{fn}} (plot already exists: {{plot_path}})")
+            success += 1
+            continue
+            
         print(f"\\n[Task] Running easy equation {{fn}}: {{eq['formula']}}")
         X, y = generate_dataset(eq)
         if len(X) == 0:
@@ -160,6 +213,41 @@ def main():
         print(f"      Time taken:  {{elapsed:.3f}}s")
         if result.error < 1e-4:
             success += 1
+            
+        try:
+            import matplotlib.pyplot as plt
+            plt.figure(figsize=(9, 6))
+
+            if eq['n_vars'] == 1:
+                sort_idx = np.argsort(X[:, 0])
+                X_sorted = X[sort_idx]
+                y_sorted = y[sort_idx]
+                y_pred = np.array(result.predict(X_sorted))
+
+                plt.scatter(X[:, 0], y, color='blue', alpha=0.5, label='Actual Data')
+                plt.plot(X_sorted[:, 0], y_pred, color='red', linewidth=2, label='EML-SR Discovered')
+                plt.title(f"EML-SR Fit for {{fn}}: {{eq['formula']}}")
+                plt.xlabel(eq['var_names'][0])
+                plt.ylabel('y')
+            else:
+                y_pred = np.array(result.predict(X))
+                plt.scatter(y, y_pred, color='purple', alpha=0.6, label='Discovered vs. Actual')
+                ideal = np.linspace(min(y), max(y), 100)
+                plt.plot(ideal, ideal, color='gray', linestyle='--', label='Perfect Fit')
+                plt.title(f"Parity Plot for {{fn}}: {{eq['formula']}}")
+                plt.xlabel('Actual y')
+                plt.ylabel('Discovered y')
+
+            plt.legend()
+            plt.grid(True)
+            plt.savefig(plot_path)
+            plt.close()
+            print(f"      Saved fit plot to {{plot_path}}")
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"      Warning: Could not generate plot: {{e}}")
+            
     print(f"\\n================ SUMMARY: {{success}}/{{len(eqs)}} resolved. ================")
 
 if __name__ == '__main__':
@@ -177,6 +265,20 @@ if __name__ == '__main__':
             continue
             
         safe_fn = fn.replace(".", "_").replace("-", "_")
+        est = estimate_complexity(eq["formula"])
+        if est <= 4:
+            mc = 5
+            bw = 500
+        elif est <= 6:
+            mc = 7
+            bw = 500
+        elif est <= 8:
+            mc = 8
+            bw = 500
+        else:
+            mc = 9
+            bw = 400
+
         diff_code = f"""import os
 import csv
 import time
@@ -237,7 +339,10 @@ def generate_dataset(eq, n_samples=300, seed=42):
         point = []
         local_env = eval_env.copy()
         for name, (low, high) in zip(var_names, var_ranges):
-            val = rng.uniform(low, high)
+            current_low, current_high = low, high
+            if name in ["theta", "theta1", "theta2", "x", "y", "z", "x1", "x2", "y1", "y2", "z1", "z2"]:
+                current_low = -high
+            val = rng.uniform(current_low, current_high)
             point.append(val)
             local_env[name] = val
         try:
@@ -255,6 +360,15 @@ def main():
         print("Error: Could not load equation {fn}")
         return
         
+    plot_dir = os.path.join('Test', 'Pict')
+    os.makedirs(plot_dir, exist_ok=True)
+    plot_path = os.path.join(plot_dir, f"fit_{safe_fn}.png")
+    
+    txt_path = os.path.join(plot_dir, f"fit_{safe_fn}.txt")
+    if os.path.exists(plot_path) and os.path.exists(txt_path):
+        print(f"Plot and log already exist for {safe_fn}. Skipping run.")
+        return
+
     print("===========================================================")
     print(f"      EML-SR INDIVIDUAL CHALLENGE: {fn}                  ")
     print("===========================================================")
@@ -266,8 +380,8 @@ def main():
         print("Error: Generated dataset is empty. Cannot run EML-SR.")
         return
         
-    print("\\n[EML-SR] Initializing Searcher (max_complexity=8, beam_width=500)...")
-    searcher = eml_sr.Searcher(max_complexity=8, beam_width=500)
+    print(f"\\n[EML-SR] Initializing Searcher (max_complexity={mc}, beam_width={bw})...")
+    searcher = eml_sr.Searcher(max_complexity={mc}, beam_width={bw})
     
     t0 = time.time()
     result = searcher.fit(X, y)
@@ -280,6 +394,51 @@ def main():
     print(f"MSE Error:   {{result.error:.2e}}")
     print(f"Time taken:  {{elapsed:.2f}} seconds")
     print("===========================================================")
+
+    txt_path = os.path.join(plot_dir, f"fit_{safe_fn}.txt")
+    with open(txt_path, "w", encoding="utf-8") as tf:
+        tf.write("====================== RESULTS ============================\\n")
+        tf.write(f"Discovered:  {{result.formula}}\\n")
+        tf.write(f"Python:      {{result.to_python()}}\\n")
+        tf.write(f"LaTeX:       {{result.to_latex()}}\\n")
+        tf.write(f"MSE Error:   {{result.error:.2e}}\\n")
+        tf.write(f"Time taken:  {{elapsed:.2f}} seconds\\n")
+        tf.write("===========================================================\\n")
+    print(f"Saved results log to {{txt_path}}")
+
+    try:
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(9, 6))
+
+        if eq['n_vars'] == 1:
+            sort_idx = np.argsort(X[:, 0])
+            X_sorted = X[sort_idx]
+            y_sorted = y[sort_idx]
+            y_pred = np.array(result.predict(X_sorted))
+
+            plt.scatter(X[:, 0], y, color='blue', alpha=0.5, label='Actual Data')
+            plt.plot(X_sorted[:, 0], y_pred, color='red', linewidth=2, label='EML-SR Discovered')
+            plt.title(f"EML-SR Fit for {fn}: {eq['formula']}")
+            plt.xlabel(eq['var_names'][0])
+            plt.ylabel('y')
+        else:
+            y_pred = np.array(result.predict(X))
+            plt.scatter(y, y_pred, color='purple', alpha=0.6, label='Discovered vs. Actual')
+            ideal = np.linspace(min(y), max(y), 100)
+            plt.plot(ideal, ideal, color='gray', linestyle='--', label='Perfect Fit')
+            plt.title(f"Parity Plot for {fn}: {eq['formula']}")
+            plt.xlabel('Actual y')
+            plt.ylabel('Discovered y')
+
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(plot_path)
+        plt.close()
+        print(f"Saved fit plot to {{plot_path}}")
+    except ImportError:
+        pass
+    except Exception as e:
+        print(f"Warning: Could not generate plot: {{e}}")
 
 if __name__ == '__main__':
     main()

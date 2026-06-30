@@ -51,7 +51,7 @@ impl Expression {
     /// Constructs a parameter placeholder expression.
     pub fn parameter() -> Self {
         Self::new(
-            vec![Node::Param { id: 0, initial_value: crate::core::value::real(1.0) }],
+            vec![Node::Param { id: 0, initial_value: crate::core::value::real(0.1) }],
             0,
             1,
             "C".to_string()

@@ -165,10 +165,10 @@ pub fn run_bfs(
             .filter_map(|mut expr| {
                 if total_candidates > 0 {
                     let current_count = counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
-                    let current_percent = (current_count * 10) / total_candidates;
+                    let current_percent = (current_count * 100) / total_candidates;
                     
                     let mut logged = last_logged_percent.load(std::sync::atomic::Ordering::Relaxed);
-                    while current_percent > logged && logged < 10 {
+                    while current_percent > logged && logged < 100 {
                         if last_logged_percent.compare_exchange_weak(
                             logged,
                             current_percent,
@@ -176,16 +176,26 @@ pub fn run_bfs(
                             std::sync::atomic::Ordering::Relaxed,
                         ).is_ok() {
                             let elapsed = start_instant.elapsed().as_secs_f64();
-                            let est_total = (elapsed * 10.0) / (current_percent as f64);
+                            let est_total = (elapsed * 100.0) / (current_percent as f64);
                             let est_remaining = est_total - elapsed;
-                            println!(
-                                "  [EML-SR]      -> Progress: {}0% completed ({} / {} candidates evaluated) in {:.1}s (Est. remaining: {:.1}s)",
+                            
+                            let filled = (current_percent / 10) as usize;
+                            let mut bar = String::with_capacity(10);
+                            for _ in 0..filled { bar.push('█'); }
+                            for _ in filled..10 { bar.push('░'); }
+                            
+                            print!(
+                                "\r  [EML] L{} Progress: [{}] {}% ({}/{}) | {:.1}s (Est: {:.1}s)   ",
+                                k,
+                                bar,
                                 current_percent,
                                 current_count,
                                 total_candidates,
                                 elapsed,
                                 est_remaining
                             );
+                            use std::io::Write;
+                            let _ = std::io::stdout().flush();
                             break;
                         }
                         logged = last_logged_percent.load(std::sync::atomic::Ordering::Relaxed);
@@ -214,6 +224,10 @@ pub fn run_bfs(
             })
             .collect();
 
+        if total_candidates > 0 {
+            println!();
+        }
+
         for (expr, error_with_penalty) in &scored_candidates {
             let raw_error =
                 *error_with_penalty / (1.0 + expr.complexity() as f64 * config.complexity_penalty);
@@ -222,8 +236,48 @@ pub fn run_bfs(
 
         let mut final_next = scored_candidates;
         final_next.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-        if final_next.len() > config.beam_width {
-            final_next.truncate(config.beam_width);
+        
+        let beam_size = config.beam_width;
+        if final_next.len() > beam_size {
+            let q_count = (beam_size as f64 * 0.8) as usize;
+            let d_count = beam_size - q_count;
+            
+            let mut selected = Vec::with_capacity(beam_size);
+            for i in 0..q_count {
+                selected.push(final_next[i].clone());
+            }
+            
+            let get_sig = |expr: &Expression| -> String {
+                let sig: Vec<String> = expr.nodes.iter()
+                    .filter_map(|n| match n {
+                        Node::Op { op_id, .. } => Some(format!("{}", op_id)),
+                        _ => None
+                    })
+                    .collect();
+                sig.join("-")
+            };
+
+            let mut root_freq = std::collections::HashMap::new();
+            for (expr, _) in &selected {
+                let sig = get_sig(expr);
+                *root_freq.entry(sig).or_insert(0) += 1;
+            }
+            
+            let mut remaining: Vec<_> = final_next.into_iter().skip(q_count).collect();
+            remaining.sort_by(|a, b| {
+                let sig_a = get_sig(&a.0);
+                let sig_b = get_sig(&b.0);
+                let freq_a = root_freq.get(&sig_a).cloned().unwrap_or(0);
+                let freq_b = root_freq.get(&sig_b).cloned().unwrap_or(0);
+                
+                freq_a.cmp(&freq_b).then_with(|| a.1.partial_cmp(&b.1).unwrap())
+            });
+            
+            for i in 0..d_count.min(remaining.len()) {
+                selected.push(remaining[i].clone());
+            }
+            
+            final_next = selected;
         }
 
         levels[k] = final_next.into_iter().map(|(e, _)| e).collect();
