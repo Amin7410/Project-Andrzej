@@ -1,0 +1,16 @@
+====================== SEARCH RESULTS ======================
+Best Formula: ArcSin(Times(v_{0}, Sin(v_{1})))
+Python:       np.arcsin((v_{0})*(np.sin(v_{1})))
+LaTeX:        \arcsin(v_{0} \cdot \sin(v_{1}))
+MSE Error:    1.43e-33
+Complexity:   5 nodes
+Time taken:   17.48 seconds
+============================================================
+
+================== PATH OF FORMULA EVOLUTION ==================
+Complexity  1 nodes | MSE: 1.71e-01 | Formula: 0.0160
+Complexity  2 nodes | MSE: 1.71e-01 | Formula: (--0.0160)
+Complexity  3 nodes | MSE: 1.15e-01 | Formula: np.arctan(np.sin(v_{1}))
+Complexity  4 nodes | MSE: 1.36e-03 | Formula: (v_{0})*(np.sin(v_{1}))
+Complexity  5 nodes | MSE: 1.43e-33 | Formula: np.arcsin((v_{0})*(np.sin(v_{1})))
+============================================================

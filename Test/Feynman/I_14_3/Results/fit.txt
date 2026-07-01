@@ -1,0 +1,14 @@
+====================== SEARCH RESULTS ======================
+Best Formula: Times(v_{1}, Times(v_{0}, v_{2}))
+Python:       (v_{1})*((v_{0})*(v_{2}))
+LaTeX:        v_{1} \cdot v_{0} \cdot v_{2}
+MSE Error:    6.93e-30
+Complexity:   5 nodes
+Time taken:   21.84 seconds
+============================================================
+
+================== PATH OF FORMULA EVOLUTION ==================
+Complexity  1 nodes | MSE: 6.33e+02 | Formula: v_{2}
+Complexity  3 nodes | MSE: 1.99e+02 | Formula: (8.3562)*(v_{2})
+Complexity  5 nodes | MSE: 6.93e-30 | Formula: (v_{1})*((v_{0})*(v_{2}))
+============================================================

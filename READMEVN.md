@@ -1,10 +1,11 @@
 # eml_sr: Nguyên thủy hóa Toán học Liên tục trong Rust
 
 > [!IMPORTANT]
-> **🚀 Phiên bản v0.2.0 đã ra mắt!**
-> Phiên bản này mang tới các sửa đổi lớn về thuật toán tối ưu hóa hằng số, log thời gian trôi qua/ETA, và tái cấu trúc lại bộ kiểm thử. Đọc chi tiết tại tài liệu phiên bản mới của chúng tôi:
-> - [Các Cải tiến & Sửa lỗi mã nguồn (Tiếng Anh)](docs/version_news/v0.2.0/improvements.md)
-> - [Phân tích Khoa học: Giới hạn biểu diễn & Giải pháp (Tiếng Anh)](docs/version_news/v0.2.0/issues_and_solutions.md)
+> **🚀 Phiên bản v0.2.2 đã ra mắt!**
+> Phiên bản này mang tới khung biến đổi dữ liệu đầu ra `SmartSearcher` (Identity, Square, Log, Inverse) để giải quyết các hàm phi tuyến, cơ chế tự động điều chỉnh beam_width và tối ưu hóa ngắt sớm (Early Stop). Đọc chi tiết tại tài liệu cập nhật của chúng tôi:
+> - **v0.2.2**: [Các Cải tiến](docs/version_news/V0.2.2/improvements.md) | [Phân tích & Giải pháp](docs/version_news/V0.2.2/issues_and_solutions.md)
+> - **v0.2.1**: [Các Cải tiến](docs/version_news/V0.2.1/improvements.md) | [Phân tích & Giải pháp](docs/version_news/V0.2.1/issues_and_solutions.md)
+> - **v0.2.0**: [Các Cải tiến](docs/version_news/v0.2.0/improvements.md) | [Phân tích & Giải pháp](docs/version_news/v0.2.0/issues_and_solutions.md)
 
 
 [![Crates.io](https://img.shields.io/crates/v/eml_sr.svg)](https://crates.io/crates/eml_sr)

@@ -2,14 +2,17 @@
 
 This document provides a clear overview of what `eml_sr` can do today, its core benefits, and critical limitations you should be aware of to ensure a smooth experience.
 
-## Current Status (v0.2.0)
+## Current Status (v0.2.2)
 
-`eml_sr` is in a highly optimized, production-ready phase. In version `v0.2.0`, major mathematical and architectural enhancements have been introduced:
-- **Model-First Parameter Fitting**: Constants are represented as dynamic parameter nodes (`Node::Param`) rather than static frozen numbers, enabling joint global optimization of nested constants across complexity levels without wasting expression tree depth.
-- **Corrected Levenberg-Marquardt Optimizer**: Replaced basic SGD steps with Marquardt Diagonal Scaling to ensure robust, stable convergence of non-linear parameters even deep within nested functions.
-- **Elastic Net Regularization ($L_1 + L_2$)**: Integrated parameter magnitude constraints directly into the search loss function to enforce model sparsity and prevent numerical instability.
-- **Two-Stage Optimization**: Uses a fast 10-iteration LM screening during the BFS search phase to save CPU cycles and a deep 30-iteration LM optimization on final Pareto-front candidates to maximize precision.
-- **Multi-Threaded Progress & ETA Tracking**: Lock-free parallel counters display search progress at every 10% milestone, including elapsed time and estimated remaining time (ETA).
+`eml_sr` is in a highly optimized, production-ready phase. Recent updates (v0.2.1 and v0.2.2) introduce major new features:
+- **Python Smart Search Wrapper (`SmartSearcher`)**: Introduces an Output Transformation layer at the Python level that dynamically searches on transformed targets ($y$, $y^2$, $\ln(y)$, $1/y$) to resolve non-linear dependencies (such as square roots or reciprocal structures).
+- **Consolidated Pareto Frontier & Back-Transformation**: Automatically maps candidate formulas back to the original scale, recalculates actual MSE, adjusts complexity to reflect the outer operator, and produces a unified Pareto front.
+- **Early Stop Strategy**: Stops the search process across strategies immediately if a mathematically perfect fit (original scale MSE $< 10^{-15}$) is discovered, reducing search time by up to 75%.
+- **Quality-Diversity (QD) Beam Selection Heuristics**: Retains 80% of candidates based on score and fills the remaining 20% by prioritizing candidates with unique operator signatures to prevent search beam monoculture.
+- **Levenberg-Marquardt Convergence Safeguards**: Optimizations abort early if consecutive steps fail to improve errors (3 iterations) or if the damping parameter $\lambda > 10^4$ to avoid wasting CPU cycles.
+- **New Built-in Operators**: Added built-in support for `Square` ($x^2$) and `Cube` ($x^3$) to save complexity tree depth.
+- **Model-First Parameter Fitting**: Constants are represented as dynamic parameter nodes (`Node::Param`) rather than static frozen numbers, enabling joint global optimization of nested constants.
+- **Corrected Levenberg-Marquardt Optimizer**: Replaced basic SGD steps with Marquardt Diagonal Scaling to ensure robust convergence.
 - **Univariate & Multivariate Regression**: Discovery of formulas for functions with one or more variables.
 - **Pareto-Front Discovery**: Returns a list of candidate formulas optimized for the balance between accuracy and complexity.
 - **Cross-Platform Support**: Official support for Windows (x64), Linux (x86_64), and macOS (Intel/Apple Silicon).
@@ -42,23 +45,19 @@ $env:PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1; .venv\Scripts\maturin.exe develop
 ```
 
 ### 2. Generating the Feynman Equations Test Suite
-Use the root generator script to dynamically create the test suite folder:
+Use the root generator script to dynamically create the hierarchical test suite folders:
 ```bash
 python generate_suite.py
 ```
-This automatically reads the dataset, cleans up legacy scripts, and creates a git-ignored `Test/` folder containing the easy suite and 92 individual challenge scripts.
+This automatically reads the dataset, cleans up legacy scripts, and creates a structured `Test/Feynman/` directory containing all 100 benchmark equations.
 
-### 3. Running the Easy Feynman Suite (7 Equations)
-Verifies the core search capability under standard configuration (`max_complexity=6`, `beam_width=200`):
+### 3. Running Individual Feynman Equations (e.g. Doppler Effect `I_34_1`)
+Each equation is housed in its own folder under `Test/Feynman/<ID>/` and uses adaptive search configurations:
 ```bash
-python Test/test_easy.py
+# Run a specific Feynman equation test using the local virtual env
+.venv/Scripts/python -u Test/Feynman/I_34_1/test.py
 ```
-
-### 4. Running Individual Challenge Equations (e.g. Relativistic Mass `I.10.7`)
-Runs a high-complexity challenge script with `max_complexity=8` and `beam_width=500`:
-```bash
-python Test/test_diff_I_10_7.py
-```
+The results (the Pareto front log `fit.txt` and regression plot `fit.png`) will be saved in `Test/Feynman/<ID>/Results/`.
 
 ---
 

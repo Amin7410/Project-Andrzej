@@ -27,4 +27,3 @@ dist/
 *.egg-info/
 
 # Generated tests
-Test/

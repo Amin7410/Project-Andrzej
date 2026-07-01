@@ -1,10 +1,11 @@
 [VietNamese click here!](READMEVN.md)
 
 > [!IMPORTANT]
-> **🚀 Release v0.2.0 is out!**
-> This version introduces major optimization fixes, progress ETA logging, and a restructured test suite. Read the details in our version documentation:
-> - [Code Improvements & Fixes](docs/version_news/v0.2.0/improvements.md)
-> - [Scientific Analysis: Representation Limits & Solutions](docs/version_news/v0.2.0/issues_and_solutions.md)
+> **🚀 Release v0.2.2 is out!**
+> This release introduces the `SmartSearcher` Output Transformation framework (Identity, Square, Log, Inverse) to resolve non-linear targets, adaptive beam width settings, and early-stop optimizations. Read our version updates for details:
+> - **v0.2.2**: [Improvements](docs/version_news/V0.2.2/improvements.md) | [Issues & Solutions](docs/version_news/V0.2.2/issues_and_solutions.md)
+> - **v0.2.1**: [Improvements](docs/version_news/V0.2.1/improvements.md) | [Issues & Solutions](docs/version_news/V0.2.1/issues_and_solutions.md)
+> - **v0.2.0**: [Improvements](docs/version_news/v0.2.0/improvements.md) | [Issues & Solutions](docs/version_news/v0.2.0/issues_and_solutions.md)
 
 # eml_sr: Primitivizing Continuous Mathematics in Rust
 

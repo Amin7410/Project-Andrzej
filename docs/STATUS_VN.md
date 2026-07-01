@@ -2,14 +2,17 @@
 
 Tài liệu này cung cấp cái nhìn rõ ràng về những gì `eml_sr` có thể làm được hiện nay, những lợi ích cốt lõi và các hạn chế quan trọng mà bạn cần lưu ý để đảm bảo trải nghiệm mượt mà.
 
-## Tình trạng hiện tại (v0.2.0)
+## Tình trạng hiện tại (v0.2.2)
 
-`eml_sr` hiện đang ở giai đoạn sản xuất được tối ưu hóa cao và ổn định. Trong phiên bản `v0.2.0`, các cải tiến lớn về cấu trúc toán học và kiến trúc hệ thống đã được giới thiệu:
-- **Kiến trúc tham số động Model-First**: Hằng số được biểu diễn dưới dạng các nút tham số động (`Node::Param`) thay vì các số đóng băng tĩnh, cho phép tối ưu hóa đồng thời các hằng số lồng nhau qua các cấp độ phức tạp mà không làm lãng phí độ sâu (độ phức tạp) của cây biểu thức.
-- **Bộ tối ưu hóa Levenberg-Marquardt sửa đổi**: Thay thế các bước SGD đơn giản bằng thuật toán Marquardt Diagonal Scaling để đảm bảo sự hội tụ mạnh mẽ, ổn định của các tham số phi tuyến ngay cả khi nằm sâu trong các hàm lồng nhau.
-- **Tối ưu hóa Elastic Net ($L_1 + L_2$)**: Tích hợp các ràng buộc phạt độ lớn tham số trực tiếp vào hàm sai số tìm kiếm để thúc đẩy tính thưa hóa (sparsity) và ngăn ngừa mất ổn định số học.
-- **Tối ưu hóa hằng số hai giai đoạn (Dual-Phase)**: Sử dụng tối ưu hóa LM 10 vòng lặp nhanh trong quá trình duyệt BFS để tiết kiệm CPU và chạy tối ưu hóa LM 30 vòng lặp sâu trên các ứng viên Pareto-Front cuối cùng để đạt độ chính xác tối đa.
-- **Log tiến trình & ETA song song**: Bộ đếm song song lock-free hiển thị tiến trình tìm kiếm tại mỗi mốc 10%, kèm theo thời gian trôi qua và thời gian còn lại dự kiến (ETA).
+`eml_sr` hiện đang ở giai đoạn sản xuất được tối ưu hóa cao và ổn định. Các cập nhật gần đây (v0.2.1 và v0.2.2) mang tới nhiều cải tiến đột phá:
+- **Lớp bọc tìm kiếm thông minh Python (`SmartSearcher`)**: Tích hợp tầng biến đổi dữ liệu đầu ra ở mức Python để tự động tìm kiếm trên các mục tiêu đã được chuyển đổi ($y$, $y^2$, $\ln(y)$, $1/y$) nhằm giải quyết các mối quan hệ phi tuyến (như căn thức hoặc nghịch đảo phân số).
+- **Biên Pareto hợp nhất và Ánh xạ ngược**: Tự động chuyển đổi các công thức ứng viên về hệ tọa độ gốc, tính toán lại sai số MSE thực tế, tự động cộng thêm chi phí cấu trúc (+1 nút cho hàm bọc nghịch đảo) để đảm bảo biên Pareto chuẩn xác.
+- **Chiến lược Ngắt Sớm (Early Stop)**: Ngắt toàn bộ vòng lặp tìm kiếm giữa các chiến lược ngay khi phát hiện công thức đúng hoàn hảo (MSE thực tế $< 10^{-15}$), tiết kiệm tới 75% thời gian chạy máy.
+- **Lọc đa dạng cấu trúc Quality-Diversity (QD)**: Thay đổi bộ lọc chùm tia (beam selection) trong BFS Rust sang tỷ lệ 80% dựa trên sai số (Quality) và 20% ưu tiên các cấu trúc độc đáo (Diversity) để tránh hiện tượng đơn điệu hóa chùm tia.
+- **Bảo vệ tối ưu hóa Levenberg-Marquardt**: Tự động ngắt tối ưu LM sớm nếu sau 3 vòng lặp liên tiếp không cải thiện sai số hoặc nếu hệ số cản $\lambda > 10^4$ để tiết kiệm CPU.
+- **Thêm các toán tử lũy thừa tích hợp**: Bổ sung sẵn `Square` ($x^2$) và `Cube` ($x^3$) vào tập toán tử nhằm tối ưu hóa độ sâu cây biểu thức.
+- **Kiến trúc tham số động Model-First**: Hằng số được biểu diễn dưới dạng các nút tham số động (`Node::Param`) thay vì các số đóng băng tĩnh.
+- **Bộ tối ưu hóa Levenberg-Marquardt sửa đổi**: Thay thế các bước SGD bằng thuật toán Marquardt Diagonal Scaling để đảm bảo sự hội tụ mạnh mẽ.
 - **Hồi quy Đơn biến & Đa biến**: Tìm kiếm công thức cho các hàm có một hoặc nhiều biến số.
 - **Khám phá Pareto-Front**: Trả về danh sách các công thức ứng viên được tối ưu hóa cân bằng giữa độ chính xác và độ phức tạp.
 - **Hỗ trợ Đa nền tảng**: Hỗ trợ chính thức cho Windows (x64), Linux (x86_64), và macOS (Intel/Apple Silicon).
@@ -42,23 +45,19 @@ $env:PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1; .venv\Scripts\maturin.exe develop
 ```
 
 ### 2. Sinh bộ kiểm thử Feynman Equations
-Sử dụng tệp sinh ở thư mục gốc để tự động tạo thư mục kiểm thử:
+Sử dụng tệp sinh ở thư mục gốc để tự động tạo cấu trúc thư mục kiểm thử phân cấp:
 ```bash
 python generate_suite.py
 ```
-Lệnh này sẽ đọc dữ liệu, xóa các tệp cũ và tạo ra một thư mục `Test/` (được git bỏ qua) chứa bộ test dễ và 92 bài test khó riêng biệt.
+Lệnh này sẽ tự động đọc tập dữ liệu, dọn dẹp các kịch bản cũ và tạo ra cấu trúc thư mục `Test/Feynman/` chứa toàn bộ 100 phương trình kiểm thử.
 
-### 3. Chạy bộ kiểm thử dễ (7 phương trình)
-Xác minh khả năng tìm kiếm cơ bản dưới cấu hình tiêu chuẩn (`max_complexity=6`, `beam_width=200`):
+### 3. Chạy từng phương trình Feynman cụ thể (Ví dụ: Hiệu ứng Doppler `I_34_1`)
+Mỗi bài toán được quy hoạch trong thư mục riêng biệt `Test/Feynman/<ID>/` và sử dụng cấu hình tìm kiếm thích ứng:
 ```bash
-python Test/test_easy.py
+# Chạy một bài test cụ thể bằng môi trường ảo Python
+.venv/Scripts/python -u Test/Feynman/I_34_1/test.py
 ```
-
-### 4. Chạy từng phương trình khó cụ thể (Ví dụ: Khối lượng tương đối tính Einstein `I.10.7`)
-Chạy bài test độ khó cao với cấu hình `max_complexity=8` và `beam_width=500`:
-```bash
-python Test/test_diff_I_10_7.py
-```
+Kết quả (file log Pareto-Front `fit.txt` và đồ thị hồi quy `fit.png`) sẽ được tự động lưu tại thư mục `Test/Feynman/<ID>/Results/`.
 
 ---
 

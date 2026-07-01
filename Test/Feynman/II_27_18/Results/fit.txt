@@ -1,0 +1,15 @@
+====================== SEARCH RESULTS ======================
+Best Formula: Times(v_{0}, Square(v_{1}))
+Python:       (v_{0})*((v_{1})**2)
+LaTeX:        v_{0} \cdot {v_{1}}^2
+MSE Error:    0.00e+00
+Complexity:   4 nodes
+Time taken:   890.51 seconds
+============================================================
+
+================== PATH OF FORMULA EVOLUTION ==================
+Complexity  1 nodes | MSE: 1.35e+03 | Formula: v_{1}
+Complexity  2 nodes | MSE: 5.57e+02 | Formula: (v_{1})**3
+Complexity  3 nodes | MSE: 2.86e+02 | Formula: (11.0328)*(v_{1})
+Complexity  4 nodes | MSE: 0.00e+00 | Formula: (v_{0})*((v_{1})**2)
+============================================================
