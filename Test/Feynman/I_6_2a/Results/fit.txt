@@ -1,0 +1,17 @@
+====================== SEARCH RESULTS ======================
+Best Formula: Tan(ArcTan(Sqrt(Divide(C, Exp(Square(v_{0}))))))
+Python:       np.tan(np.arctan(np.sqrt((0.1592/np.exp((v_{0})**2)))))
+LaTeX:        \tan(\arctan(\sqrt{\frac{0.1592}{e^{{v_{0}}^2}}}))
+MSE Error:    3.63e-17
+Complexity:   8 nodes
+Time taken:   2081.20 seconds
+============================================================
+
+================== PATH OF FORMULA EVOLUTION ==================
+Complexity  1 nodes | MSE: 1.91e-02 | Formula: 0.1605
+Complexity  2 nodes | MSE: 1.91e-02 | Formula: (--0.1605)
+Complexity  5 nodes | MSE: 9.38e-04 | Formula: (0.1386)*(np.exp(np.cos(v_{0})))
+Complexity  6 nodes | MSE: 8.20e-04 | Formula: np.tan((0.1349)*(np.exp(np.cos(v_{0}))))
+Complexity  7 nodes | MSE: 1.35e-09 | Formula: np.sqrt((np.sqrt(0.0253)/np.exp((v_{0})**2)))
+Complexity  8 nodes | MSE: 3.63e-17 | Formula: np.tan(np.arctan(np.sqrt((0.1592/np.exp((v_{0})**2)))))
+============================================================
