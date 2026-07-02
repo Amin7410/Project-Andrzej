@@ -1,11 +1,9 @@
-[VietNamese click here!](READMEVN.md)
+> [!NOTE]
+> **Project paused (open for review).** The engine works and is published; the EML
+> research questions were explored thoroughly and honestly. See
+> **[PROJECT_STATUS.md](PROJECT_STATUS.md)** for the full picture, findings, and open
+> directions for anyone who wants to pick it up.
 
-> [!IMPORTANT]
-> **Release v0.2.2**
-> This release introduces the `SmartSearcher` Output Transformation framework (Identity, Square, Log, Inverse) to resolve non-linear targets, adaptive beam width settings, and early-stop optimizations. Read our version updates for details:
-> - **v0.2.2**: [Improvements](docs/version_news/V0.2.2/improvements.md) | [Issues & Solutions](docs/version_news/V0.2.2/issues_and_solutions.md)
-> - **v0.2.1**: [Improvements](docs/version_news/V0.2.1/improvements.md) | [Issues & Solutions](docs/version_news/V0.2.1/issues_and_solutions.md)
-> - **v0.2.0**: [Improvements](docs/version_news/v0.2.0/improvements.md) | [Issues & Solutions](docs/version_news/v0.2.0/issues_and_solutions.md)
 
 # eml_sr: Symbolic Regression via the EML Operator
 
