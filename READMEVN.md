@@ -1,12 +1,13 @@
-# eml_sr: Nguyên thủy hóa Toán học Liên tục trong Rust
+[English click here!](README.md)
 
 > [!IMPORTANT]
-> **🚀 Phiên bản v0.2.2 đã ra mắt!**
+> **Phiên bản v0.2.2**
 > Phiên bản này mang tới khung biến đổi dữ liệu đầu ra `SmartSearcher` (Identity, Square, Log, Inverse) để giải quyết các hàm phi tuyến, cơ chế tự động điều chỉnh beam_width và tối ưu hóa ngắt sớm (Early Stop). Đọc chi tiết tại tài liệu cập nhật của chúng tôi:
 > - **v0.2.2**: [Các Cải tiến](docs/version_news/V0.2.2/improvements.md) | [Phân tích & Giải pháp](docs/version_news/V0.2.2/issues_and_solutions.md)
 > - **v0.2.1**: [Các Cải tiến](docs/version_news/V0.2.1/improvements.md) | [Phân tích & Giải pháp](docs/version_news/V0.2.1/issues_and_solutions.md)
 > - **v0.2.0**: [Các Cải tiến](docs/version_news/v0.2.0/improvements.md) | [Phân tích & Giải pháp](docs/version_news/v0.2.0/issues_and_solutions.md)
 
+# eml_sr: Hồi quy Ký hiệu (Symbolic Regression) qua Toán tử EML
 
 [![Crates.io](https://img.shields.io/crates/v/eml_sr.svg)](https://crates.io/crates/eml_sr)
 [![PyPI](https://img.shields.io/pypi/v/eml-sr.svg)](https://pypi.org/project/eml-sr/)
@@ -18,100 +19,57 @@
 | **Python / Pip** | `pip install eml_sr` | [pypi.org](https://pypi.org/project/eml-sr/) |
 
 ## Giới thiệu
-**eml_sr** là một thư viện Rust hiệu năng cao, được xây dựng dựa trên một trong những khám phá cấu trúc sâu sắc nhất của toán học liên tục: **Toàn bộ các hàm số sơ cấp đều có thể được biểu diễn bằng toán tử EML.**
 
-Trong thế giới điện tử kỹ thuật số, cổng NAND là viên gạch nền tảng. Tương tự như vậy, **eml_sr** cung cấp "toán tử EML" như một cầu nối vạn năng cho toán học liên tục. Thư viện này cho phép các lập trình viên biểu diễn mọi công thức phức tạp bằng một cấu trúc EML đồng nhất hoặc một cấu trúc kết hợp (hybrid) hiệu năng cao giữa EML và các toán tử tiêu chuẩn đã được tối ưu.
+**eml_sr** là một thư viện Rust cho bài toán hồi quy ký hiệu (symbolic regression) — tìm công thức toán học đóng khớp với một tập dữ liệu số. Không gian tìm kiếm của nó được xây dựng quanh **toán tử EML**, một phát hiện toán học có thật của Andrzej Odrzywołek (Đại học Jagiellonian):
 
-Thay vì phụ thuộc hoàn toàn vào các Cây Cú pháp Trừu tượng (AST) cồng kềnh và rời rạc, **eml_sr** mang đến sức mạnh giúp bạn tinh gọn kiến trúc toán học bằng cách lấy EML làm nhân lõi hợp nhất.
+```
+eml(x, y) = e^x - ln(y)
+```
 
-## Sự chuyển dịch Mô hình với EML
+Odrzywołek đã chứng minh rằng chỉ với toán tử nhị phân này và hằng số `1`, ta có thể dựng lại toàn bộ danh mục của một máy tính khoa học tiêu chuẩn — các phép toán số học, các hàm sơ cấp siêu việt, và các hằng số như e, π, i. Bài báo đã công bố trên arXiv: [*All elementary functions from a single binary operator*](https://arxiv.org/abs/2603.21852).
 
-**eml_sr** không sinh ra để thay thế các thư viện tính toán chuẩn (Standard Math Libraries), mà nhằm cung cấp một cách tiếp cận hoàn toàn mới trong việc biểu diễn và khám phá cấu trúc toán học.
+`eml_sr` dùng EML như một toán tử bên trong một engine hồi quy ký hiệu Rust thực dụng, cùng với các toán tử "đường tắt" thông thường (Sin, Cos, Exp, Log, Sqrt, Square, Cube, và các phép số học chuẩn). Xem mục **[Đọc trước khi dùng: Trạng thái thực tế](#đọc-trước-khi-dùng-trạng-thái-thực-tế)** bên dưới để biết chính xác cái gì đã cài đặt và cái gì vẫn chỉ là hướng nghiên cứu.
 
-### 1. Chuyển đổi Cấu trúc Dữ liệu: Từ Đa dạng sang Đồng nhất
-Khi xây dựng Cây cú pháp trừu tượng (AST) cho một biểu thức toán học:
+## Đọc trước khi dùng: Trạng thái thực tế
 
-*   **Phương pháp truyền thống (Heterogeneous AST)**: Sử dụng nhiều loại Node khác nhau (Add, Mul, Sin, Exp...).
-    *   **Ưu điểm**: Mô tả trực tiếp và tính toán cực kỳ nhanh trên phần cứng hiện tại.
-    *   **Thách thức**: Khi cần viết các thuật toán biến đổi công thức (như đạo hàm tự động, đơn giản hóa biểu thức), lập trình viên phải xử lý vô số trường hợp rẽ nhánh (switch-case) cho từng toán tử.
+Mục này tồn tại vì các phiên bản README trước đây đã mô tả năng lực của dự án tự tin hơn nhiều so với những gì code hiện có thể làm. Vui lòng đọc kỹ trước khi quyết định dùng dự án này cho việc gì.
 
-*   **Cách tiếp cận của EML (Homogeneous Binary Tree)**:
-    Giảm thiểu độ phức tạp của không gian toán học bằng cách sử dụng `EmlNode` làm cấu trúc hợp nhất.
-    *   **Giá trị mang lại**: Sự đa dạng của toán học được "nén" lại thành một cấu trúc đồ thị tinh gọn. Dù sử dụng EML thuần túy hay các mô hình kết hợp (hybrid) tối ưu, mã nguồn lõi của bạn vẫn luôn tinh giản, dễ đoán và cực kỳ an toàn.
+**Những gì đã cài đặt và hoạt động thật:**
+- Một engine tìm kiếm theo chiều rộng (BFS) + beam search song song hóa bằng Rayon (`src/engine/bfs.rs`), duyệt qua các cây biểu thức tăng dần độ phức tạp, dựng từ EML cùng bộ toán tử tiêu chuẩn.
+- Tối ưu cục bộ các hằng số bằng Levenberg–Marquardt (`src/engine/optimizer.rs`) — một kỹ thuật kinh điển, không phải thứ riêng có của EML.
+- Một Pareto front các công thức đánh đổi giữa độ chính xác và độ phức tạp, cùng lớp bọc Python `SmartSearcher` (`smart_search.py`) thử tìm kiếm trên các target đã biến đổi (`y`, `y²`, `ln(y)`, `1/y`) để bắt được các hàm lồng trong `sqrt`/`log`/phép chia.
+- API cho cả Rust và Python (qua PyO3), đã publish trên crates.io và PyPI. Phần này đã được kiểm thử với các công thức vật lý thật (một tập con của bộ benchmark Feynman) và tìm ra kết quả khớp chính xác hoặc gần chính xác cho nhiều công thức.
 
-### 2. Trí tuệ Nhân tạo (Symbolic Regression): Từ Tìm kiếm rời rạc sang Tối ưu hóa liên tục
-Trong bài toán yêu cầu AI tự động tìm ra công thức từ dữ liệu thô:
+**Những gì CHƯA được cài đặt, dù các phiên bản tài liệu trước mô tả đây là ý tưởng cốt lõi của dự án:**
+- **Tối ưu hóa gradient liên tục trên một cây EML "chủ" (master tree)** (huấn luyện một cây EML lớn bằng optimizer như Adam, rồi snap trọng số về 0/1 để lộ ra công thức) — đây là phương pháp được mô tả trong chính bài báo của Odrzywołek (và bài báo đó chỉ kiểm chứng ở độ sâu cây ≤ 4), và **đây không phải là cái mà engine Rust hiện tại đang làm**. Engine hiện tại là một thuật toán tìm kiếm tổ hợp rời rạc kiểu kinh điển, về bản chất tương tự các công cụ symbolic regression khác (như PySR, gplearn), với EML chỉ là một trong số các toán tử có sẵn.
+- **Biên dịch công thức bất kỳ thành chuỗi lệnh EML thuần túy**, và bất kỳ **máy ảo EML / mạch analog / trình biên dịch VLSI** nào — đây là các *ứng dụng tiềm năng* của phần toán học nền tảng, được nêu ở mục dưới để có ngữ cảnh, không phải tính năng mà codebase này cung cấp.
+- Trên thực tế, qua các công thức vật lý đã thử nghiệm, công thức tìm được gần như không bao giờ dùng trực tiếp toán tử `EML` — các toán tử "đường tắt" rẻ hơn (Exp, Log, Sqrt, Square, Divide...) luôn được ưu tiên bởi cách chấm điểm phạt theo độ phức tạp, vì chúng là toán tử một ngôi (unary) nên rẻ hơn về cấu trúc so với việc dựng lại cùng hàm đó qua EML. EML hiện chỉ thực sự có lợi cho các biểu thức đúng hình dạng `eᴬ − ln(B)` với A và B khác nhau.
 
-*   **Phương pháp truyền thống (Combinatorial Search)**: AI phải chọn lựa và ghép nối từ một "từ điển" chứa hàng chục toán tử cơ sở (Base Set) khác nhau thông qua các thuật toán di truyền.
-    *   **Đặc điểm**: Hiệu quả với các biểu thức ngắn, nhưng không gian tìm kiếm sẽ bùng nổ theo cấp số nhân khi độ phức tạp tăng lên.
+Điều này không có nghĩa là nền tảng toán học sai — nó đã được kiểm chứng độc lập (xem trích dẫn ở trên). Nó có nghĩa là: khi cài `eml_sr` hôm nay, bạn nhận được một engine hồi quy ký hiệu Rust hoạt động tốt, kiểu kinh điển, có EML như một toán tử — chứ chưa phải là hiện thực hóa tầm nhìn "tối ưu hóa liên tục trên một toán tử vạn năng". Nếu bạn đang tìm cách tiếp cận dựa trên gradient đó, nó chưa tồn tại ở đây.
 
-*   **Cách tiếp cận của EML (Continuous Optimization)**:
-    Bỏ qua hoàn toàn việc chọn hàm. AI được cung cấp một "Công thức chủ" (Master Formula) – một cây EML khổng lồ chứa mọi khả năng của hàm sơ cấp.
-    *   **Giá trị mang lại**: EML biến bài toán "tìm kiếm tổ hợp" khó nhằn thành bài toán "tối ưu hóa Gradient" trơn tru. Bằng cách sử dụng các bộ tối ưu hóa chuẩn (như Adam) trên các nhánh cây và làm tròn trọng số (snapping), mạng Nơ-ron có thể tự động gọt giũa và làm lộ diện các định luật vật lý, toán học một cách rành mạch, giải quyết triệt để vấn đề "hộp đen" của AI.
+## Vì sao kết hợp EML với các toán tử tiêu chuẩn?
 
-### 3. EML: Sự hiệu quả kết hợp với Tính vạn năng
+Một mình EML có thể biểu diễn mọi hàm sơ cấp, nhưng làm vậy có thể cần cây rất sâu (ví dụ dựng lại `sin(x)` chỉ từ các phép ghép `eml`), và chi phí tìm kiếm tăng theo cấp số nhân với độ sâu cây. Vì vậy mặc định `eml_sr` cũng đăng ký thêm các toán tử một/hai ngôi rẻ, chuyên dụng (Exp, Log, Sqrt, Sin, Cos, Tan, ArcSin/Cos/Tan, Square, Cube, và số học chuẩn) để việc tìm kiếm chạm tới các hàm phổ biến chỉ trong 1 node thay vì nhiều node. EML vẫn nằm trong bộ toán tử như một phương án dự phòng tổng quát — hữu ích nhất cho các quan hệ dạng `exp(...) − ln(...)` không có đường tắt riêng.
 
-Để hiểu được giá trị độc bản của **eml_sr**, hãy hình dung mối quan hệ giữa các Toán tử thông thường và Toán tử EML:
-
-*   **Toán tử thông thường (Sin, Cos, Pi, E...) giống như "Linh kiện đúc sẵn"**: Chúng là những thành phần đã có hình dáng cố định. Nếu bạn muốn xây một ngôi nhà tiêu chuẩn, việc sử dụng các linh kiện này sẽ cực kỳ nhanh chóng và hiệu quả. Đây chính là những "Đường tắt tốc độ cao" của chúng ta để tìm ra các định luật toán học đã biết.
-*   **Toán tử EML giống như "Đất sét"**: Bạn có thể nặn đất sét thành *bất kỳ* hình thù nào. Dù bạn có thể dùng đất sét để nặn ra một viên gạch, nhưng sức mạnh thực sự của nó nằm ở việc tạo ra những hình khối hữu cơ, phức tạp mà không một viên gạch đúc sẵn nào có thể biểu diễn được.
-
-Trong **eml_sr**, chúng tôi kết hợp cả hai. Chúng tôi cung cấp các hằng số và hàm số tiêu chuẩn để đảm bảo bộ máy chạy nhanh như chớp cho các tác vụ thông thường. Nhưng chúng tôi luôn giữ **EML làm nhân lõi** để đảm bảo bộ máy không bao giờ bị giới hạn. Khi toán học truyền thống gặp bế tắc trước một mối quan hệ mới lạ, EML sẽ đóng vai trò là công cụ khám phá vạn năng để tìm ra những định luật thậm chí còn chưa có tên gọi.
-
-
-> [!NOTE]
-> **💡 Lưu ý về Kiến trúc & Đánh đổi (Trade-offs)**: Sự đồng nhất tuyệt đối của EML đi kèm với những đánh đổi về chiều sâu của cây biểu thức và yêu cầu khắt khe trong việc xử lý số phẩy động (Floating-point). Để hiểu rõ hơn về vấn đề này, hãy ghé xem bài phân tích và thảo luận của cá nhân tôi tại [docs/WHATITHINK.txt](docs/WHATITHINK.txt).
+Nếu muốn ép tìm kiếm chỉ dùng EML (không có đường tắt), thư viện hỗ trợ chế độ build "Pure EML" ở compile-time — xem [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md). Lưu ý chế độ này làm tìm kiếm chậm và sâu hơn rất nhiều, như đã ghi trong [docs/STATUS.md](docs/STATUS.md).
 
 ## Cơ sở khoa học và Tác giả
 
-**Andrzej Odrzywołek**, nhà vật lý lý thuyết tại Viện Vật lý Lý thuyết thuộc Đại học Jagiellonian (Krakow, Ba Lan), là tác giả đứng sau phát hiện chấn động về tính tối giản của toán học liên tục. Thông qua nỗ lực nghiên cứu cá nhân và phương pháp tìm kiếm cạn kiệt có hệ thống, ông đã giải quyết được một bài toán mà trước đó chưa có tiền lệ: tìm ra một "nguyên tử" duy nhất cho mọi hàm số.
-
-Khám phá cốt lõi của Andrzej Odrzywołek chính là toán tử EML (Exp-Minus-Log):
-                eml(x, y) = e^(x) - ln(y)
-Ông đã chứng minh một cách thuyết phục rằng toán tử này, khi kết hợp với duy nhất hằng số 1, có thể tái tạo toàn bộ danh mục của một máy tính khoa học tiêu chuẩn. Điều này bao gồm:
-- Các phép tính số học cơ bản (+, -, x, /).
+**Andrzej Odrzywołek**, nhà vật lý lý thuyết tại Viện Vật lý Lý thuyết, Đại học Jagiellonian (Krakow, Ba Lan), đã tìm ra toán tử EML thông qua phương pháp tìm kiếm cạn kiệt có hệ thống, và chứng minh một cách xây dựng (constructive) rằng nó — kết hợp với hằng số 1 — đủ để tạo ra:
+- Các phép tính số học cơ bản (+, -, ×, /).
 - Tất cả các hàm số sơ cấp (sin, cos, log, lũy thừa...).
-- Các hằng số nền tảng của toán học như e, pi và đơn vị ảo i.
+- Các hằng số nền tảng của toán học như e, π và đơn vị ảo i.
 
-Tầm nhìn của Andrzej Odrzywołek không chỉ dừng lại ở lý thuyết thuần túy. Ông đã thiết lập một quy trình xác minh chặt chẽ, sử dụng các hằng số siêu việt độc lập để chứng minh rằng mọi biểu thức toán học đều có thể được chuyển đổi thành một cấu trúc cây nhị phân đồng nhất của các nút EML. Công trình của ông mở ra những ứng dụng tiềm năng to lớn trong việc tạo ra các mạch tính toán analog tối giản và thúc đẩy khả năng giải thích của trí tuệ nhân tạo thông qua hồi quy ký hiệu.
+Tham khảo đầy đủ: [All elementary functions from a single binary operator, arXiv:2603.21852](https://arxiv.org/abs/2603.21852). Một bài báo tiếp theo của Tomasz Stachowiak, [*Algebraic structure behind Odrzywołek's EML operator*, arXiv:2604.23893](https://arxiv.org/abs/2604.23893), xem xét cấu trúc lý thuyết nhóm phía sau toán tử này. Dự án `eml_sr` là một nỗ lực kỹ thuật độc lập sử dụng toán tử EML; nó không do tác giả của hai bài báo trên viết hay chính thức liên kết với họ.
 
-Tham khảo tài liệu đầy đủ tại đây: [All elementary functions from a single operator](https://www.alphaxiv.org/abs/2603.21852v2)
+## Ứng dụng tiềm năng của EML (Khái niệm — chưa cài đặt trong dự án này)
 
-## Ứng dụng thực tế của EML
+Bản thân phần toán học mở ra nhiều hướng thú vị, được nêu dưới đây để có ngữ cảnh. **`eml_sr` hiện chưa cài đặt bất kỳ mục nào sau đây** — chúng được liệt kê để người đọc hiểu *vì sao* EML thú vị, không phải danh sách tính năng.
 
-Sức mạnh của toán tử EML không chỉ nằm ở tính thanh lịch về mặt lý thuyết. Dưới đây là các lĩnh vực mà thư viện `eml_sr` có thể trở thành nhân lõi cho những hệ thống phần mềm thế hệ mới.
-
-### 1. Công cụ Trí tuệ Nhân tạo (Machine Learning & Symbolic Regression)
-
-Đây là ứng dụng lớn nhất và thực tế nhất của EML trong phần mềm hiện nay:
-
-- **Hồi quy Ký hiệu (Symbolic Regression)**: Thay vì các mô hình AI tìm kiếm trên những ngữ pháp hỗn tạp chứa nhiều toán tử khác nhau, EML cho phép tạo ra một "công thức chủ" (master formula) đa tham số bằng cấu trúc cây nhị phân. Toàn bộ không gian tìm kiếm được thu gọn về việc tối ưu hóa trọng số trên một cấu trúc đồng nhất duy nhất, thay vì phải dò dẫm qua hàng tỷ tổ hợp cấu trúc khác nhau.
-
-- **Phá vỡ "Hộp đen" AI**: Bạn có thể dùng các thuật toán tối ưu hóa chuẩn (như Adam) để huấn luyện mạng nơ-ron dựa trên cây EML này. Khi huấn luyện thành công, hệ thống có thể ép các trọng số về các giá trị chính xác (0 hoặc 1), giúp AI xuất ra hẳn một **công thức toán học tường minh** (closed-form expressions) thay vì chỉ là các con số dự đoán. Đây chính là chìa khóa để biến AI từ một "hộp đen" thành một công cụ mà con người có thể đọc, hiểu và tin tưởng.
-
-### 2. Xây dựng Trình biên dịch (Compilers) và Máy ảo (Virtual Machines)
-
-EML cung cấp một nền tảng lý tưởng để các nhà phát triển xây dựng các hệ thống thực thi siêu tối giản:
-
-- **Trình biên dịch EML**: Bạn có thể dùng thư viện `eml_sr` làm nhân lõi để viết các phần mềm trình biên dịch có khả năng chuyển đổi bất kỳ công thức toán học nào (ví dụ: sin(x) + e^x) thành dạng EML thuần túy — một chuỗi các lệnh EML lồng nhau chỉ chứa hằng số 1.
-
-- **Máy ảo một tập lệnh (Single Instruction Stack Machine)**: Dạng EML thuần túy này có thể được thực thi trên phần mềm giả lập một cỗ máy ngăn xếp chỉ có đúng một tập lệnh duy nhất. Hãy tưởng tượng một chiếc máy tính RPN (Reverse Polish Notation) chỉ có đúng một nút bấm — đó chính là bản chất của máy ảo EML. Sự đơn giản cực độ này giúp việc xác minh tính đúng đắn (formal verification) trở nên khả thi và dễ dàng hơn bao giờ hết.
-
-### 3. Phần mềm Thiết kế Vi mạch và Tính toán Analog
-
-EML làm cầu nối giữa kỹ sư phần mềm và kỹ sư phần cứng:
-
-- Bởi vì mọi hàm sơ cấp đều trở thành các cây nhị phân đồng nhất trong ký pháp EML, bạn có thể dùng thư viện `eml_sr` để viết phần mềm biên dịch công thức thành các **bản thiết kế mạch điện** (circuit schematics).
-
-- Điều này rất hữu ích cho lĩnh vực **điện toán tương tự** (analog computing), nơi các kỹ sư có thể tạo ra các mạch tính toán hàm đa biến bằng cách ghép nối một cấu trúc topology cây nhị phân của các phần tử EML giống hệt nhau. Thay vì phải thiết kế riêng từng mạch cho mỗi phép toán (+, x, sin...), bạn chỉ cần sản xuất hàng loạt một loại linh kiện EML duy nhất và kết nối chúng theo sơ đồ cây.
-
-### 4. Thiết kế Cấu trúc Dữ liệu và Phân tích Cú pháp (Parsing)
-
-EML mang lại sự đơn giản triệt để cho việc xử lý biểu thức toán học trong phần mềm:
-
-- Thay vì phải viết code xử lý cho hàng chục phép toán khác nhau (+, -, sin, cos...), phần mềm của bạn chỉ cần xử lý một **ngữ pháp phi ngữ cảnh cực kỳ đơn giản**: S -> 1|eml(S, S)
-
-- Điều này giúp các hệ thống lưu trữ, phân tích cú pháp (parser) hoặc xử lý hình thức các biểu thức toán học trở nên vô cùng hiệu quả. Mọi biểu thức — dù phức tạp đến đâu — đều có thể được quy đổi về một cấu trúc đồng nhất, giúp đơn giản hóa logic đánh giá và giảm bớt gánh nặng về mặt kiến trúc.
+- **Phá vỡ "hộp đen" AI**: huấn luyện mạng nơ-ron trên cây EML bằng optimizer chuẩn rồi snap trọng số về giá trị chính xác (0 hoặc 1), về nguyên tắc có thể tạo ra công thức tường minh thay vì trọng số mờ. Đây là phương pháp đã được chứng minh (ở độ sâu nông) trong bài báo của Odrzywołek — không phải điều engine Rust này đang làm.
+- **Trình biên dịch EML / Máy ngăn xếp một lệnh duy nhất**: vì mọi biểu thức hàm sơ cấp về nguyên tắc có thể viết lại thành chuỗi lệnh EML lồng nhau, người ta có thể biên dịch bất kỳ công thức nào thành một máy ngăn xếp "một lệnh" — hữu ích cho formal verification. Không có trình biên dịch như vậy trong repo này.
+- **Thiết kế VLSI / Điện toán tương tự**: cấu trúc cây nhị phân đồng nhất của các đơn vị EML giống hệt nhau, về nguyên tắc có thể ánh xạ sang các phần tử mạch analog lặp lại thay vì thiết kế mạch riêng cho từng phép toán. Hoàn toàn là khái niệm ở đây.
+- **Ngữ pháp tối giản để parse/lưu trữ**: ngữ pháp `S -> 1 | eml(S, S)` cực kỳ đơn giản, về nguyên tắc có thể đơn giản hóa việc lưu trữ/phân tích cú pháp biểu thức toán học. Cấu trúc dữ liệu nội bộ của `eml_sr` không dùng dạng tối giản này — nó dùng cây toán tử hỗn hợp, vì lý do hiệu năng đã giải thích ở trên.
 
 ## Bắt đầu nhanh
 
@@ -128,8 +86,6 @@ cargo add eml_sr
 ```
 
 ### 2. Cách dùng cơ bản (Python)
-
-Khám phá công thức ẩn trong dữ liệu của bạn bằng API tương thích với Scikit-Learn:
 
 ```python
 from eml_sr import Searcher
@@ -155,7 +111,7 @@ fn main() {
     let searcher = Searcher::new(SearchConfig::default());
     let xs = vec![1.0, 2.0, 3.0];
     let ys = vec![2.5, 4.5, 6.5];
-    
+
     if let Ok(result) = searcher.find_function(&xs, &ys) {
         println!("Tìm thấy công thức: {}", result.formula);
     }
@@ -164,11 +120,11 @@ fn main() {
 
 ## Tình trạng Dự án & An toàn
 
-Để biết thông tin chi tiết về khả năng hiện tại, các nền tảng hỗ trợ và **cảnh báo an toàn quan trọng** về việc sử dụng bộ nhớ (OOM), vui lòng xem [docs/STATUS_VN.md](docs/STATUS_VN.md).
+Để biết thông tin chi tiết về khả năng hiện tại, nền tảng hỗ trợ, số liệu hiệu năng **đo được thật** (không phải số liệu quảng cáo), và cảnh báo an toàn về bộ nhớ, xem [docs/STATUS_VN.md](docs/STATUS_VN.md).
 
 ## Phát triển & Đóng góp
 
-Nếu bạn muốn biên dịch từ mã nguồn, chạy thử nghiệm hiệu năng, hoặc đóng góp vào nhân lõi của bộ máy, vui lòng xem tài liệu [docs/CONTRIBUTING_VN.md](docs/CONTRIBUTING_VN.md).
+Nếu bạn muốn build từ mã nguồn, chạy benchmark, hoặc đóng góp vào nhân lõi, xem [docs/CONTRIBUTING_VN.md](docs/CONTRIBUTING_VN.md).
 
 ---
-*Lưu ý: Thư viện `eml_sr` là một bản hiện thực hóa sẵn sàng cho sản xuất của lý thuyết toán tử EML.*
+*Lưu ý: `eml_sr` là một engine hồi quy ký hiệu đang được phát triển tích cực và hoạt động thật. Nó chưa phải là hiện thực hóa đầy đủ tầm nhìn tối ưu hóa liên tục/huấn luyện gradient nêu ở trên — xem mục "Đọc trước khi dùng" để biết trạng thái trung thực hiện tại.*

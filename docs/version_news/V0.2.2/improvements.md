@@ -2,6 +2,8 @@
 
 This document lists all code-level optimizations, architecture upgrades, and new features introduced in version `v0.2.2` compared to `v0.2.1`.
 
+> **Editor's note (post-release cleanup):** the `Test/Feynman/` benchmark suite and `generate_suite.py` described below were later removed from the repository during a documentation/repo cleanup pass (only 20 of 100 equations had ever been run, and the folder was mostly unrun scaffolding). This document is kept as a historical record of what v0.2.2 introduced; it no longer reflects the current repo layout. See [STATUS.md](../../STATUS.md) for current status.
+
 ---
 
 ## 1. Python Smart Search Wrapper (`SmartSearcher`)

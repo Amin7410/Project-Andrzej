@@ -2,6 +2,8 @@
 
 This document analyzes the core bottlenecks addressed in version `v0.2.2` and details their mathematical solutions.
 
+> **Editor's note (post-release cleanup):** the `Test/Feynman/` folder referenced below (results for `I_47_23`, `I_34_1`, etc.) was later removed from the repository during a documentation/repo cleanup pass. The specific MSE numbers quoted here are historical measurements taken before removal and are not reproducible from the current repo layout without regenerating a similar benchmark. See [STATUS.md](../../STATUS.md) for current, measured performance notes.
+
 ---
 
 ## 1. Issue: Sqrt Blindness & Intermediate Term Pruning

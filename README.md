@@ -1,13 +1,13 @@
 [VietNamese click here!](READMEVN.md)
 
 > [!IMPORTANT]
-> **🚀 Release v0.2.2 is out!**
+> **Release v0.2.2**
 > This release introduces the `SmartSearcher` Output Transformation framework (Identity, Square, Log, Inverse) to resolve non-linear targets, adaptive beam width settings, and early-stop optimizations. Read our version updates for details:
 > - **v0.2.2**: [Improvements](docs/version_news/V0.2.2/improvements.md) | [Issues & Solutions](docs/version_news/V0.2.2/issues_and_solutions.md)
 > - **v0.2.1**: [Improvements](docs/version_news/V0.2.1/improvements.md) | [Issues & Solutions](docs/version_news/V0.2.1/issues_and_solutions.md)
 > - **v0.2.0**: [Improvements](docs/version_news/v0.2.0/improvements.md) | [Issues & Solutions](docs/version_news/v0.2.0/issues_and_solutions.md)
 
-# eml_sr: Primitivizing Continuous Mathematics in Rust
+# eml_sr: Symbolic Regression via the EML Operator
 
 | System | Installation Command | Registry |
 | :--- | :--- | :--- |
@@ -15,101 +15,57 @@
 | **Python / Pip** | `pip install eml_sr` | [pypi.org](https://pypi.org/project/eml-sr/) |
 
 ## Introduction
-**eml_sr** is a high-performance Rust library built around one of the deepest structural discoveries in continuous mathematics: **All elementary functions can be represented using the EML operator.**
 
-In the world of digital electronics, the NAND gate is the fundamental building block. Similarly, **eml_sr** provides the "EML operator" as a universal bridge for continuous mathematics. This library allows developers to represent complex formulas using either a uniform EML-only structure or a high-performance hybrid structure that combines EML with optimized standard operators.
+**eml_sr** is a Rust library for symbolic regression — searching for a closed-form mathematical formula that fits a numerical dataset. Its search space is built around the **EML operator**, a genuine mathematical discovery by Andrzej Odrzywołek (Jagiellonian University):
 
-Instead of relying solely on cumbersome Abstract Syntax Trees (AST), **eml_sr** gives you the power to streamline your mathematical architecture using EML as the unifying core.
+```
+eml(x, y) = e^x - ln(y)
+```
 
-## Paradigm Shift with EML
+Odrzywołek proved that this single binary operator, combined with only the constant `1`, is sufficient to reconstruct the standard repertoire of a scientific calculator — arithmetic, elementary transcendental functions, and constants like e, π, and i. The proof is published on arXiv: [*All elementary functions from a single binary operator*](https://arxiv.org/abs/2603.21852).
 
-**eml_sr** was not created to replace standard math libraries, but to provide a completely new approach to representing and discovering mathematical structures.
+`eml_sr` uses EML as one operator inside a practical Rust symbolic-regression engine, alongside conventional "fast-path" operators (Sin, Cos, Exp, Log, Sqrt, Square, Cube, and standard arithmetic). See **[Read This First: Status & Honesty Notes](#read-this-first-status--honesty-notes)** below for exactly what is implemented today versus what is still a research direction.
 
-### 1. Data Structure Transformation: From Heterogeneous to Homogeneous
-When building an Abstract Syntax Tree (AST) for a mathematical expression:
+## Read This First: Status & Honesty Notes
 
-*   **Traditional Method (Heterogeneous AST)**: Uses many different node types (Add, Mul, Sin, Exp...).
-    *   **Pros**: Direct description and extremely fast computation on current hardware.
-    *   **Challenges**: When writing formula transformation algorithms (like auto-differentiation or expression simplification), developers must handle countless branch cases (switch-case) for each operator.
+This section exists because earlier revisions of this README described capabilities more confidently than the current code supports. Please read it before deciding how to use this project.
 
-*   **The EML Approach (Homogeneous Binary Tree)**:
-    Reduces the complexity of mathematical spaces by using `EmlNode` as a unifying structure.
-    *   **Value Proposition**: The diversity of mathematics is "compressed" into a streamlined graph structure. Whether using pure EML or optimized hybrids, your core code remains lean, predictable, and extremely safe.
+**What is implemented and working today:**
+- A parallel (Rayon) breadth-first / beam-search engine (`src/engine/bfs.rs`) that searches over increasingly complex expression trees, built from EML plus the standard operator set.
+- Levenberg–Marquardt local optimization of numeric constants (`src/engine/optimizer.rs`) — a conventional technique, not something unique to EML.
+- A Pareto front of formulas trading off accuracy vs. complexity, and a Python `SmartSearcher` wrapper (`smart_search.py`) that retries the search on transformed targets (`y`, `y²`, `ln(y)`, `1/y`) to catch functions nested inside `sqrt`/`log`/division.
+- Rust and Python (PyO3) APIs, published on crates.io and PyPI. This part has been exercised against real physics formulas (a subset of the Feynman symbolic-regression benchmark) and found exact or near-exact matches for several of them.
 
-### 2. Artificial Intelligence (Symbolic Regression): From Discrete Search to Continuous Optimization
-In tasks where AI is required to automatically discover formulas from raw data:
+**What is *not* implemented, despite being described in earlier versions of this document as the project's core idea:**
+- **Continuous gradient optimization over a "master" EML tree** (training a large homogeneous EML tree with an optimizer like Adam, then snapping weights to 0/1 to reveal a formula) — this is the method described in Odrzywołek's own paper (validated there only at shallow tree depth, ≤4), and it is *not* what the current Rust engine does. The current engine is a conventional discrete combinatorial search, comparable in spirit to other symbolic-regression tools (e.g. PySR, gplearn), with EML available as one operator among several.
+- **Compiling arbitrary formulas down to pure-EML instruction sequences**, and any **EML virtual machine / analog-circuit / VLSI compiler** — these are described as *potential applications* of the underlying math in the sections below, not as features this codebase provides.
+- In practice, across the physics formulas this project has been tested against, the discovered formulas almost never use the `EML` operator directly — the cheaper "fast-path" operators (Exp, Log, Sqrt, Square, Divide, ...) are preferred by the search's complexity-penalized scoring, because they are unary and thus structurally cheaper than reconstructing the same function through EML. EML currently pays off mainly for expressions with the exact shape `eᴬ − ln(B)`, where `A` and `B` differ.
 
-*   **Traditional Method (Combinatorial Search)**: AI must choose and combine from a "dictionary" containing dozens of different base operators (Base Set) through genetic algorithms.
-    *   **Characteristics**: Effective for short expressions, but the search space explodes exponentially as complexity increases.
+None of this means the underlying math is wrong — it's independently verified (see citation above). It means: what you get by installing `eml_sr` today is a working, conventional Rust symbolic-regression engine that happens to include EML as an operator, not yet a realization of the "continuous optimization over a universal operator" vision. If that gradient-based approach is what you're looking for, it does not exist here yet.
 
-*   **The EML Approach (Continuous Optimization)**:
-    Completely skips the function selection step. The AI is provided with a "Master Formula" – a massive EML tree containing all possibilities of elementary functions.
-    *   **Value Proposition**: EML turns the difficult "combinatorial search" problem into a smooth "Gradient Optimization" problem. By using standard optimizers (like Adam) on the tree branches and rounding weights (snapping), Neural Networks can automatically prune and reveal sharp, precise physical and mathematical laws, fundamentally solving the "black box" problem of AI.
+## Why EML *and* standard operators?
 
-### 3. The EML: Efficiency Meets Universality
+EML alone can represent any elementary function, but doing so can require deeply nested trees (e.g. reconstructing `sin(x)` purely from `eml` compositions), and search cost grows combinatorially with tree depth. So by default `eml_sr` also registers cheap, purpose-built unary/binary operators (Exp, Log, Sqrt, Sin, Cos, Tan, ArcSin/Cos/Tan, Square, Cube, and standard arithmetic) so the search can reach common functions in a single node instead of many. EML stays in the operator set as a general fallback — useful in particular for `exp(...) − ln(...)`-shaped relationships that don't have a dedicated shortcut.
 
-To understand the unique value of **eml_sr**, think of the relationship between Standard Operators and the EML Operator:
-
-*   **Standard Operators (Sin, Cos, Pi, E...) are like "Lego Bricks"**: They are pre-shaped components. If you want to build a standard house, using Lego is fast and efficient. These are our "High-Speed Shortcuts" for discovering known mathematical laws.
-*   **The EML Operator is like "Clay"**: You can mold clay into *any* shape. While you can use clay to make a brick, its true power lies in creating complex, organic forms that no Lego brick could ever represent.
-
-In **eml_sr**, we combine both. We provide standard constants and functions to ensure the engine is lightning-fast for common tasks. But we keep **EML at the core** to ensure the engine is never limited. When traditional mathematics encounters an unknown relationship, EML acts as the universal discovery engine to find laws that don't have a name yet.
-
-
-> [!NOTE]
-> **💡 Note on Architecture & Trade-offs**: The absolute uniformity of EML comes with trade-offs regarding expression tree depth and strict requirements for floating-point precision. To understand these issues better, please see my personal analysis and discussion in [docs/WHATITHINK.txt](docs/WHATITHINK.txt).
+If you want to force a search that can *only* use EML (no shortcuts), the library supports a compile-time "Pure EML" build — see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md). Be aware this makes the search dramatically slower and deeper, as documented in [docs/STATUS.md](docs/STATUS.md).
 
 ## Scientific Foundation and Authors
 
-**Andrzej Odrzywołek**, a theoretical physicist at the Institute of Theoretical Physics at the Jagiellonian University (Krakow, Poland), is the author behind the groundbreaking discovery of the minimalism of continuous mathematics. Through personal research effort and a systematic exhaustive search method, he solved a problem that had no precedent: finding a single "atom" for all functions.
-
-The core discovery of Andrzej Odrzywołek is the EML (Exp-Minus-Log) operator:
-                eml(x, y) = e^(x) - ln(y)
-He has convincingly proven that this operator, when combined with only the constant 1, can reproduce the entire catalog of a standard scientific calculator. This includes:
-- Basic arithmetic operations (+, -, x, /).
+**Andrzej Odrzywołek**, a theoretical physicist at the Institute of Theoretical Physics at the Jagiellonian University (Krakow, Poland), discovered the EML operator through a systematic exhaustive search and proved constructively that it — combined with the constant 1 — suffices to generate:
+- Basic arithmetic operations (+, -, ×, /).
 - All elementary functions (sin, cos, log, powers...).
-- Fundamental constants of mathematics such as e, pi, and the imaginary unit i.
+- Fundamental constants of mathematics such as e, π, and the imaginary unit i.
 
-Andrzej Odrzywołek's vision does not stop at pure theory. He has established a rigorous verification process, using independent transcendental constants to prove that all mathematical expressions can be converted into a uniform binary tree structure of EML nodes. His work opens up massive potential applications in creating minimalist analog computing circuits and enhancing the explainability of artificial intelligence through symbolic regression.
+Full reference: [All elementary functions from a single binary operator, arXiv:2603.21852](https://arxiv.org/abs/2603.21852). A follow-up paper by Tomasz Stachowiak, [*Algebraic structure behind Odrzywołek's EML operator*, arXiv:2604.23893](https://arxiv.org/abs/2604.23893), examines the group-theoretic structure behind it. This `eml_sr` project is an independent engineering effort that uses the EML operator; it is not authored by or officially affiliated with either paper's authors.
 
-Full reference documentation: [All elementary functions from a single operator](https://www.alphaxiv.org/abs/2603.21852v2)
+## Potential Applications of EML (Conceptual — Not Implemented Here)
 
-## Practical Applications of EML
+The math itself opens interesting doors, discussed below for context. **`eml_sr` does not currently implement any of the following** — they are included so readers understand *why* EML is interesting, not as a feature list.
 
-The power of the EML operator lies not only in its theoretical elegance. Below are the areas where the `eml_sr` library can become the core engine for next-generation software systems.
-
-### 1. Artificial Intelligence (Machine Learning & Symbolic Regression)
-
-This is the largest and most practical application of EML in software today:
-
-- **Symbolic Regression**: Instead of AI models searching over messy grammars containing many different operators, EML allows for the creation of a multi-parameter "master formula" using a binary tree structure. The entire search space is collapsed into weight optimization on a single uniform structure, instead of fumbling through billions of different structural combinations.
-
-- **Breaking the AI "Black Box"**: You can use standard optimization algorithms (like Adam) to train neural networks based on this EML tree. Upon successful training, the system can snap weights to exact values (0 or 1), helping the AI output a **clear mathematical formula** (closed-form expressions) instead of just predicted numbers. This is the key to turning AI from a "black box" into a tool that humans can read, understand, and trust.
-
-### 2. Building Compilers and Virtual Machines
-
-EML provides an ideal foundation for developers to build ultra-minimalist execution systems:
-
-- **EML Compiler**: You can use the `eml_sr` library as a core engine to write compiler software capable of converting any mathematical formula (e.g., sin(x) + e^x) into pure EML form — a series of nested EML instructions containing only the constant 1.
-
-- **Single Instruction Stack Machine**: This pure EML form can be executed on a simulated stack machine that has exactly one single instruction. Imagine an RPN (Reverse Polish Notation) calculator with exactly one button — that is the essence of an EML virtual machine. This extreme simplicity makes formal verification more feasible and easier than ever.
-
-### 3. VLSI Design and Analog Computing
-
-EML acts as a bridge between software engineers and hardware engineers:
-
-- Because all elementary functions become uniform binary trees in EML notation, you can use the `eml_sr` library to write software that compiles formulas into **circuit schematics**.
-
-- This is very useful in **analog computing**, where engineers can create multivariate function computing circuits by connecting a binary tree topology structure of identical EML elements. Instead of designing separate circuits for each operation (+, x, sin...), you can mass-produce a single type of EML component and connect them according to the tree diagram.
-
-### 4. Data Structure Design and Parsing
-
-EML brings radical simplicity to the processing of mathematical expressions in software:
-
-- Instead of writing handling code for dozens of different operations (+, -, sin, cos...), your software only needs to handle one **extremely simple context-free grammar**:
-S -> 1|eml(S, S)
-
-- This makes systems for storage, parsing, or formal processing of mathematical expressions incredibly efficient. Every expression — no matter how complex — can be reduced to a highly uniform structure, simplifying evaluation logic and reducing architectural overhead.
+- **Breaking the AI "Black Box"**: training a neural network on an EML tree with a standard optimizer and snapping weights to exact values (0 or 1) could, in principle, produce closed-form formulas instead of opaque weights. This is the method demonstrated (at shallow depth) in Odrzywołek's paper — not something this Rust engine does.
+- **EML Compiler / Single-Instruction Stack Machine**: because every elementary-function expression can in principle be rewritten as nested EML instructions, one could compile any formula into a "one-instruction" stack machine — useful for formal verification. No such compiler exists in this repository.
+- **VLSI / Analog Computing**: a uniform binary-tree structure of identical EML units could, in principle, be mapped to repeated analog circuit elements instead of designing bespoke circuits per operation. Purely conceptual here.
+- **Minimal grammar for parsing/storage**: the grammar `S -> 1 | eml(S, S)` is extremely simple, which could simplify storage/parsing of mathematical expressions. `eml_sr`'s own internal representation does not use this minimal form — it uses a mixed operator tree, for the performance reasons explained above.
 
 ## Quick Start
 
@@ -126,8 +82,6 @@ cargo add eml_sr
 ```
 
 ### 2. Basic Usage (Python)
-
-Discover the hidden formula in your data using the Scikit-Learn compatible API:
 
 ```python
 from eml_sr import Searcher
@@ -153,7 +107,7 @@ fn main() {
     let searcher = Searcher::new(SearchConfig::default());
     let xs = vec![1.0, 2.0, 3.0];
     let ys = vec![2.5, 4.5, 6.5];
-    
+
     if let Ok(result) = searcher.find_function(&xs, &ys) {
         println!("Found formula: {}", result.formula);
     }
@@ -162,12 +116,11 @@ fn main() {
 
 ## Project Status & Safety
 
-For detailed information about current capabilities, supported platforms, and **critical safety warnings** regarding memory usage (OOM), please see [docs/STATUS.md](docs/STATUS.md).
+For detailed information about current capabilities, supported platforms, measured (not aspirational) performance numbers, and safety warnings regarding memory usage (OOM), see [docs/STATUS.md](docs/STATUS.md).
 
 ## Development & Contributing
 
-If you want to build from source, run benchmarks, or contribute to the core engine, please see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
+If you want to build from source, run benchmarks, or contribute to the core engine, see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ---
-*Note: The `eml_sr` library is a production-ready implementation of the EML operator theory.*
-
+*Note: `eml_sr` is an actively developed, working symbolic-regression engine. It is not yet a full realization of the continuous-optimization / gradient-training vision described above — see "Read This First" for the honest current state.*

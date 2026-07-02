@@ -49,8 +49,8 @@ impl Operator for Neg {
     fn name(&self) -> &str { "Neg" }
     fn arity(&self) -> u8 { 1 }
     fn eval(&self, args: &[Value]) -> Option<Value> { Some(-args[0]) }
-    fn to_latex(&self, args: &[&str]) -> String { format!("(-{})", args[0]) }
-    fn to_python(&self, args: &[&str]) -> String { format!("(-{})", args[0]) }
+    fn to_latex(&self, args: &[&str]) -> String { format!("(-({}))", args[0]) }
+    fn to_python(&self, args: &[&str]) -> String { format!("(-({}))", args[0]) }
 }
 
 #[derive(Debug)]
@@ -60,7 +60,7 @@ impl Operator for Inv {
     fn arity(&self) -> u8 { 1 }
     fn eval(&self, args: &[Value]) -> Option<Value> { value::c_div(value::real(1.0), args[0]) }
     fn to_latex(&self, args: &[&str]) -> String { format!(r"\frac{{1}}{{{}}}", args[0]) }
-    fn to_python(&self, args: &[&str]) -> String { format!("(1/{})", args[0]) }
+    fn to_python(&self, args: &[&str]) -> String { format!("(1/({}))", args[0]) }
 }
 
 binary_op!(Plus,     "Plus",     true,  |a, b| Some(a + b),        "{0} + {1}", "({0})+({1})");
@@ -74,7 +74,7 @@ impl Operator for Divide {
     fn arity(&self) -> u8 { 2 }
     fn eval(&self, args: &[Value]) -> Option<Value> { value::c_div(args[0], args[1]) }
     fn to_latex(&self, args: &[&str]) -> String { format!(r"\frac{{{}}}{{{}}}", args[0], args[1]) }
-    fn to_python(&self, args: &[&str]) -> String { format!("({}/{})", args[0], args[1]) }
+    fn to_python(&self, args: &[&str]) -> String { format!("(({})/({}))", args[0], args[1]) }
 }
 
 // EXTENDED MATHEMATICS (Toggleable via "full-math" feature)
